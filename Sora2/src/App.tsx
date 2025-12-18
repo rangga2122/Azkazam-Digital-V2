@@ -348,30 +348,31 @@ function App() {
     setLoadingStatus('Mengirim permintaan ke server...');
 
     let lastError = 'Gagal mengirim form.';
-    const submitData = new FormData();
-    submitData.append('prompt', formData.prompt);
-    submitData.append('duration', formData.duration);
-    submitData.append('aspect_ratio', formData.aspect_ratio);
-    submitData.append('model', 'sora-2-free');
-    submitData.append('provider', 'openai');
-    submitData.append('resolution', 'small');
-    submitData.append('user_agent', navigator.userAgent || '');
-    if (formData.files) {
-      submitData.append('files', formData.files);
-    }
     
+    // Prepare JSON payload (file upload not supported in this mode)
+    const submitPayload: Record<string, any> = {
+      prompt: formData.prompt,
+      duration: formData.duration,
+      aspect_ratio: formData.aspect_ratio,
+      model: 'sora-2-free',
+      provider: 'openai',
+      resolution: 'small',
+      user_agent: navigator.userAgent || ''
+    };
+    
+    // Try to get turnstile token
     try {
       const s = await axios.get(apiUrl('/api/test-solver'));
       if (s.data?.success && s.data?.token) {
-        submitData.set('turnstile_token', s.data.token);
-        if (s.data?.userAgent) submitData.set('user_agent', s.data.userAgent);
+        submitPayload.turnstile_token = s.data.token;
+        if (s.data?.userAgent) submitPayload.user_agent = s.data.userAgent;
       }
     } catch {}
     
     for (let attempt = 1; attempt <= MAX_SUBMIT_ATTEMPTS; attempt++) {
       try {
-        const response = await axios.post(apiUrl('/api/generate'), submitData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+        const response = await axios.post(apiUrl('/api/generate'), submitPayload, {
+          headers: { 'Content-Type': 'application/json' }
         });
 
         if (response.data.success && response.data.uuid) {
@@ -402,8 +403,8 @@ function App() {
             setLoadingStatus('Sedang Proses Peracikan');
             const s = await axios.get(apiUrl('/api/test-solver'));
             if (s.data?.success && s.data?.token) {
-              submitData.set('turnstile_token', s.data.token);
-              if (s.data?.userAgent) submitData.set('user_agent', s.data.userAgent);
+              submitPayload.turnstile_token = s.data.token;
+              if (s.data?.userAgent) submitPayload.user_agent = s.data.userAgent;
             }
           } catch {}
         }
