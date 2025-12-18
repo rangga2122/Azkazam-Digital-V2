@@ -26,7 +26,6 @@ import UGCHandApp from './Ugc Hand/App';
 import KontenBelajarAnak from './konten-belajar-anak/App';
 import NanoBananaPro from './components/NanoBananaPro';
 import TanyaBangVidgoApp from './Tanya Bang Vidgo/App';
-import Sora2App from './Sora2/src/App';
 import BuatCeritaAnak from './buat-cerita/App';
 
 const CONCURRENT_LIMIT = 2;
@@ -71,14 +70,14 @@ const App: React.FC = () => {
     // --- APP STATE ---
     const [activeJobId, setActiveJobId] = useState<string | null>(null);
     const [jobs, setJobs] = useState<Job[]>([]);
-    const [activeFeature, setActiveFeature] = useState<'dashboard' | 'video' | 'image' | 'cinema' | 'photoshoot' | 'iklan' | 'lipsync' | 'tts' | 'banner' | 'ugccaption' | 'ugchand' | 'editornarasi' | 'kontenbelajaranak' | 'nanobananapro' | 'tanyabangvidgo' | 'buatceritaanak' | 'sora2'>("dashboard");
+    const [activeFeature, setActiveFeature] = useState<'dashboard' | 'video' | 'image' | 'cinema' | 'photoshoot' | 'iklan' | 'lipsync' | 'tts' | 'banner' | 'ugccaption' | 'ugchand' | 'editornarasi' | 'kontenbelajaranak' | 'nanobananapro' | 'tanyabangvidgo' | 'buatceritaanak'>("dashboard");
     const [sessionWarn, setSessionWarn] = useState<boolean>(false);
     const [sessionRemainingMin, setSessionRemainingMin] = useState<number>(0);
 
     // Admin Notification State
     const [adminNotification, setAdminNotification] = useState<{ enabled: boolean; title: string; message: string; image: string } | null>(null);
 
-    const isFeatureAllowed = (f: 'dashboard' | 'video' | 'image' | 'cinema' | 'photoshoot' | 'iklan' | 'lipsync' | 'tts' | 'banner' | 'ugccaption' | 'ugchand' | 'editornarasi' | 'kontenbelajaranak' | 'nanobananapro' | 'tanyabangvidgo' | 'buatceritaanak' | 'sora2'): boolean => {
+    const isFeatureAllowed = (f: 'dashboard' | 'video' | 'image' | 'cinema' | 'photoshoot' | 'iklan' | 'lipsync' | 'tts' | 'banner' | 'ugccaption' | 'ugchand' | 'editornarasi' | 'kontenbelajaranak' | 'nanobananapro' | 'tanyabangvidgo' | 'buatceritaanak'): boolean => {
         if (!currentUser) return false;
         return true;
     };
@@ -87,7 +86,7 @@ const App: React.FC = () => {
     useEffect(() => {
         if (!currentUser) return;
         if (isFeatureAllowed(activeFeature)) return;
-        const ORDER: Array<typeof activeFeature> = ['dashboard','video','sora2','image','cinema','photoshoot','iklan','banner','ugccaption','tanyabangvidgo','ugchand','editornarasi','kontenbelajaranak','lipsync','tts','nanobananapro','buatceritaanak'];
+        const ORDER: Array<typeof activeFeature> = ['dashboard','video','image','cinema','photoshoot','iklan','banner','ugccaption','tanyabangvidgo','ugchand','editornarasi','kontenbelajaranak','lipsync','tts','nanobananapro','buatceritaanak'];
         const firstAllowed = ORDER.find(f => isFeatureAllowed(f));
         if (firstAllowed) setActiveFeature(firstAllowed);
     }, [currentUser]);
@@ -1378,7 +1377,7 @@ const App: React.FC = () => {
                         )}
                     </div>
 
-                    <div className={`flex flex-col lg:grid ${['dashboard','tts','cinema','ugccaption','tanyabangvidgo','ugchand','editornarasi','kontenbelajaranak','nanobananapro','buatceritaanak','sora2'].includes(activeFeature) ? 'lg:grid-cols-[220px_1fr] xl:grid-cols-[240px_1fr]' : 'lg:grid-cols-[220px_450px_1fr] xl:grid-cols-[240px_500px_1fr]'} gap-6 lg:gap-8 items-start`}>
+                    <div className={`flex flex-col lg:grid ${['dashboard','tts','cinema','ugccaption','tanyabangvidgo','ugchand','editornarasi','kontenbelajaranak','nanobananapro','buatceritaanak'].includes(activeFeature) ? 'lg:grid-cols-[220px_1fr] xl:grid-cols-[240px_1fr]' : 'lg:grid-cols-[220px_450px_1fr] xl:grid-cols-[240px_500px_1fr]'} gap-6 lg:gap-8 items-start`}>
                         {/* Sidebar Menu */}
                         <aside className="glass-panel rounded-3xl p-4 md:p-6 space-y-3 h-fit self-center lg:self-start w-full max-w-[320px] lg:max-w-none">
                             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">Menu</h3>
@@ -1411,19 +1410,6 @@ const App: React.FC = () => {
                                     </span>
                                     <span>Generate Video (VEO 3.1)</span>
                                     {!isFeatureAllowed('video') && <LockClosedIcon className="w-4 h-4 text-slate-400 ml-auto" />}
-                                </button>
-                                <button
-                                    className={`flex items-center gap-3 px-3 py-2 rounded-xl border text-sm font-bold transition-all ${activeFeature === 'sora2' ? 'bg-veo-primary/10 border-veo-primary text-veo-primary' : 'bg-white border-slate-200 text-slate-700 hover:border-veo-primary/30'} ${!isFeatureAllowed('sora2') ? 'opacity-60 cursor-not-allowed' : ''}`}
-                                    onClick={() => isFeatureAllowed('sora2') ? setActiveFeature('sora2') : alert('Fitur ini belum diaktifkan untuk akun Anda.')}
-                                >
-                                    <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg border ${activeFeature === 'sora2' ? 'bg-veo-primary/10 border-veo-primary/30 text-veo-primary' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-                                        <VideoIcon className="w-5 h-5" />
-                                    </span>
-                                    <span className="flex flex-col leading-tight">
-                                        <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider">New</span>
-                                        <span>Buat VIdeo Sora 2</span>
-                                    </span>
-                                    {!isFeatureAllowed('sora2') && <LockClosedIcon className="w-4 h-4 text-slate-400 ml-auto" />}
                                 </button>
                                 <button
                                     className={`flex items-center gap-3 px-3 py-2 rounded-xl border text-sm font-bold transition-all ${activeFeature === 'image' ? 'bg-veo-primary/10 border-veo-primary text-veo-primary' : 'bg-white border-slate-200 text-slate-700 hover:border-veo-primary/30'} ${!isFeatureAllowed('image') ? 'opacity-60 cursor-not-allowed' : ''}`}
@@ -1675,10 +1661,6 @@ const App: React.FC = () => {
                                     onSubmit={handleGenerateImage}
                                     onStop={handleStopImageGeneration}
                                 />
-                            </div>
-
-                            <div className={activeFeature === 'sora2' && isFeatureAllowed('sora2') ? '' : 'hidden'} aria-hidden={activeFeature !== 'sora2' || !isFeatureAllowed('sora2')}>
-                                <Sora2App />
                             </div>
 
                             {/* Keep-alive: render CinemaAI selalu, hanya disembunyikan saat tidak aktif */}
