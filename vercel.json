@@ -2,6 +2,11 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "functions": {
+    "api/soraGenerate.ts": {
+      "maxDuration": 60
+    }
+  },
   "crons": [
     {
       "path": "/api/resetDailyCredits",

@@ -191,7 +191,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        const { prompt, duration, aspect_ratio, resolution, model, provider, turnstile_token, user_agent } = req.body || {};
+        const { prompt, duration, aspect_ratio, resolution, model, provider, turnstile_token, user_agent, image_base64, image_name } = req.body || {};
 
         if (!prompt) {
             return res.status(400).json({ success: false, error: 'Prompt wajib diisi.' });
@@ -210,6 +210,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         formData.append('duration', duration || '10');
         formData.append('provider', provider || 'openai');
         if (turnstile_token) formData.append('turnstile_token', turnstile_token);
+
+        // Handle base64 image if provided
+        if (image_base64 && typeof image_base64 === 'string') {
+            try {
+                // Extract base64 data and mime type
+                const matches = image_base64.match(/^data:([^;]+);base64,(.+)$/);
+                if (matches) {
+                    const mimeType = matches[1];
+                    const base64Data = matches[2];
+                    const buffer = Buffer.from(base64Data, 'base64');
+                    const fileName = image_name || 'image.png';
+                    
+                    // Append as file to FormData
+                    formData.append('files', buffer, {
+                        filename: fileName,
+                        contentType: mimeType
+                    });
+                }
+            } catch (imgErr) {
+                console.error('Failed to process image:', imgErr);
+            }
+        }
 
         const extraHeaders: Record<string, string> = {};
         if (typeof user_agent === 'string' && user_agent) {

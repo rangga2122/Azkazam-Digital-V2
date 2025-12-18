@@ -349,7 +349,17 @@ function App() {
 
     let lastError = 'Gagal mengirim form.';
     
-    // Prepare JSON payload (file upload not supported in this mode)
+    // Helper to convert file to base64
+    const fileToBase64 = (file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+      });
+    };
+    
+    // Prepare JSON payload with optional base64 image
     const submitPayload: Record<string, any> = {
       prompt: formData.prompt,
       duration: formData.duration,
@@ -359,6 +369,18 @@ function App() {
       resolution: 'small',
       user_agent: navigator.userAgent || ''
     };
+    
+    // Convert image to base64 if provided
+    if (formData.files) {
+      try {
+        setLoadingStatus('Mengkonversi gambar...');
+        const base64Image = await fileToBase64(formData.files);
+        submitPayload.image_base64 = base64Image;
+        submitPayload.image_name = formData.files.name;
+      } catch (err) {
+        console.error('Failed to convert image:', err);
+      }
+    }
     
     // Try to get turnstile token
     try {
@@ -371,8 +393,11 @@ function App() {
     
     for (let attempt = 1; attempt <= MAX_SUBMIT_ATTEMPTS; attempt++) {
       try {
+        setLoadingStatus('Mengirim permintaan ke server...');
         const response = await axios.post(apiUrl('/api/generate'), submitPayload, {
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity
         });
 
         if (response.data.success && response.data.uuid) {
