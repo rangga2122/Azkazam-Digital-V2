@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App Azkazamdigital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        veo: {
+                            primary: '#f97316', // Orange-500
+                            secondary: '#fb923c', // Orange-400
+                            dark: '#fff7ed',      // Orange-50 (very light background accent)
+                            panel: 'rgba(255, 255, 255, 0.8)'
+                        }
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'spin-slow': 'spin 3s linear infinite',
+                        'fadeIn': 'fadeIn 0.5s ease-out',
+                        'scaleIn': 'scaleIn 0.3s ease-out',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        scaleIn: {
+                            '0%': { transform: 'scale(0.95)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .glass-panel {
+                @apply bg-white/80 backdrop-blur-xl border border-slate-200 shadow-xl;
+            }
+            .input-base {
+                @apply w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:border-veo-primary focus:ring-1 focus:ring-veo-primary transition-all outline-none;
+            }
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="h-full text-slate-700 antialiased selection:bg-veo-primary/30">
+    <div id="root" class="min-h-full flex flex-col"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

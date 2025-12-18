@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDGO PRO TTS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ea580c; /* orange-600 */
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #ea580c, #fb923c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card-shadow {
+            box-shadow: 0 20px 25px -5px rgba(234, 88, 12, 0.1), 0 10px 10px -5px rgba(234, 88, 12, 0.04);
+        }
+        /* WordPress compatibility styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .tts-container {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 auto !important;
+            padding: 20px !important;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .tts-card {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="tts-container">
+        <div class="tts-card bg-white rounded-2xl card-shadow p-6 md:p-8 space-y-6 border border-orange-200">
+        <div class="text-center">
+            <div class="flex items-center justify-center gap-3 mb-2">
+                <i class="fas fa-microphone-alt text-3xl text-orange-600"></i>
+                <i class="fas fa-volume-up text-3xl text-orange-600"></i>
+            </div>
+            <p class="text-gray-600 mt-2 flex items-center justify-center gap-2">
+                <i class="fas fa-magic text-orange-500"></i>
+                Ubah teks menjadi suara dengan gaya dan intonasi yang Anda inginkan
+                <i class="fas fa-magic text-orange-500"></i>
+            </p>
+        </div>
+
+        <!-- Form Input -->
+        <div class="space-y-4">
+            <div>
+                <label for="api-key-input" class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <i class="fas fa-key text-orange-500"></i>
+                    API Key (Opsional)
+                </label>
+                <textarea id="api-key-input" rows="3" class="w-full p-3 bg-orange-50 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition" placeholder="Masukkan satu atau beberapa API key. Pisahkan dengan koma atau baris baru."></textarea>
+                <p class="text-xs text-gray-500 mt-1">Jika kolom ini kosong, sistem akan memakai daftar API key bawaan.</p>
+            </div>
+            <div>
+                <label for="style-select" class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <i class="fas fa-palette text-orange-500"></i>
+                    Pilih Gaya Intonasi (Opsional)
+                </label>
+                <select id="style-select" class="w-full p-3 bg-orange-50 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition">
+                    <!-- Opsi gaya akan ditambahkan oleh JavaScript -->
+                </select>
+            </div>
+            <div>
+                <label for="text-input" class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <i class="fas fa-edit text-orange-500"></i>
+                    Teks Anda
+                </label>
+                <textarea id="text-input" rows="6" class="w-full p-3 bg-orange-50 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition" placeholder="Masukkan teks yang ingin diubah menjadi suara di sini. Anda bisa menggunakan tag SSML seperti <break time='1s'/> untuk jeda."></textarea>
+            </div>
+            <div>
+                <label for="voice-select" class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <i class="fas fa-user-alt text-orange-500"></i>
+                    Pilih Suara
+                </label>
+                <select id="voice-select" class="w-full p-3 bg-orange-50 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition">
+                    <!-- Opsi suara akan ditambahkan oleh JavaScript -->
+                </select>
+            </div>
+            <div>
+                <label for="temperature-slider" class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <i class="fas fa-thermometer-half text-orange-500"></i>
+                    Temperatur: <span id="temperature-value" class="font-semibold text-orange-600">1.0</span>
+                </label>
+                <input type="range" id="temperature-slider" min="0" max="2" step="0.1" value="1.0" class="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer slider-orange">
+            </div>
+        </div>
+        
+        <!-- Tombol Aksi -->
+        <div class="flex items-center justify-center gap-4 pt-2">
+            <button id="generate-btn" class="w-full max-w-xs flex items-center justify-center gap-2 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold py-3 px-6 rounded-lg transition shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transform hover:scale-105">
+                <i class="fas fa-play-circle text-xl"></i>
+                <span>Buat Suara</span>
+                <i class="fas fa-magic"></i>
+            </button>
+        </div>
+        <div class="flex justify-center mt-2">
+            <div id="loader" class="loader hidden"></div>
+        </div>
+
+        <!-- Pemutar Audio & Pesan Error -->
+        <div id="audio-output" class="mt-6 hidden">
+             <p class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                <i class="fas fa-headphones text-orange-500"></i>
+                Hasil Audio:
+             </p>
+            <audio id="audio-player" controls class="w-full rounded-lg border-2 border-orange-200"></audio>
+        </div>
+        <div id="error-message" class="mt-4 text-center text-red-500 font-medium hidden"></div>
+    </div>
+
+    <script type="module">
+        const generateBtn = document.getElementById('generate-btn');
+        const loader = document.getElementById('loader');
+        const textInput = document.getElementById('text-input');
+        const voiceSelect = document.getElementById('voice-select');
+        const temperatureSlider = document.getElementById('temperature-slider');
+        const temperatureValue = document.getElementById('temperature-value');
+        const audioOutput = document.getElementById('audio-output');
+        const audioPlayer = document.getElementById('audio-player');
+        const errorMessage = document.getElementById('error-message');
+        const styleSelect = document.getElementById('style-select');
+        const apiKeyInput = document.getElementById('api-key-input');
+
+        // API Keys untuk rotasi otomatis
+        const apiKeys = [
+            'AIzaSyD-KPTQwHxAU-JFaAwLWG0MXv0TwEa_mrI',
+            'AIzaSyCFK4B49JWxXYQudxIDwgOfDZ5eTuQUnAY',
+            'AIzaSyBFvrDAyGwnJramyq-dm6I-23-WgzNK0qc',
+            'AIzaSyD722wWYLk00l10r5uUpO_wHpyPyg8iSn4',
+            'AIzaSyDWeRv9F9W6DSCgAN343nN9XmWSNK62vs8',
+            'AIzaSyDhCbHunNRxpIoFrtnSNcPpQStkCK_vcvg'
+        ];
+        
+        let currentApiKeyIndex = 0;
+
+        function getCustomApiKeys() {
+            const raw = (apiKeyInput.value || '').trim();
+            if (!raw) return [];
+            return raw
+                .split(/\r?\n|,|;/)
+                .map(s => s.trim())
+                .filter(Boolean);
+        }
+
+        function getNextApiKey() {
+            const customKeys = getCustomApiKeys();
+            const keys = customKeys.length ? customKeys : apiKeys;
+            const apiKey = keys[currentApiKeyIndex % keys.length];
+            currentApiKeyIndex = (currentApiKeyIndex + 1) % keys.length;
+            return apiKey;
+        }
+
+        const voices = [
+            { name: 'Zephyr', description: 'Sari - Cewek, Cerah & Jelas', displayName: 'Sari' }, 
+            { name: 'Puck', description: 'Budi - Cowok, Ceria & Semangat', displayName: 'Budi' }, 
+            { name: 'Charon', description: 'Andi - Cowok, Informatif & Formal', displayName: 'Andi' }, 
+            { name: 'Kore', description: 'Dewi - Cewek, Tegas & Kuat', displayName: 'Dewi' }, 
+            { name: 'Fenrir', description: 'Rudi - Cowok, Mudah Bersemangat', displayName: 'Rudi' }, 
+            { name: 'Leda', description: 'Sinta - Cewek, Muda & Segar', displayName: 'Sinta' }, 
+            { name: 'Orus', description: 'Agus - Cowok, Tegas & Dewasa', displayName: 'Agus' }, 
+            { name: 'Aoede', description: 'Maya - Cewek, Ringan & Santai', displayName: 'Maya' }, 
+            { name: 'Callirrhoe', description: 'Rina - Cewek, Mudah Bergaul', displayName: 'Rina' }, 
+            { name: 'Enceladus', description: 'Dian - Cewek, Berbisik & Lembut', displayName: 'Dian' }, 
+            { name: 'Iapetus', description: 'Bayu - Cowok, Jernih & Tegas', displayName: 'Bayu' }, 
+            { name: 'Umbriel', description: 'Indah - Cewek, Ramah & Santai', displayName: 'Indah' }, 
+            { name: 'Algieba', description: 'Lestari - Cewek, Halus & Lembut', displayName: 'Lestari' }, 
+            { name: 'Gacrux', description: 'Hendra - Cowok, Dewasa & Matang', displayName: 'Hendra' }, 
+            { name: 'Pulcherrima', description: 'Fitri - Cewek, Terus Terang', displayName: 'Fitri' }, 
+            { name: 'Achird', description: 'Joko - Cowok, Ramah & Bersahabat', displayName: 'Joko' }, 
+            { name: 'Zubenelgenubi', description: 'Wati - Cewek, Kasual & Santai', displayName: 'Wati' }, 
+            { name: 'Vindemiatrix', description: 'Putri - Cewek, Lembut & Tenang', displayName: 'Putri' }, 
+            { name: 'Sadachbia', description: 'Eko - Cowok, Hidup & Bersemangat', displayName: 'Eko' }, 
+            { name: 'Sulafat', description: 'Ayu - Cewek, Hangat & Menenangkan', displayName: 'Ayu' }
+        ];
+        
+        const styles = [
+             "Ucapkan dengan lembut:", "Katakan dengan gembira:", "Bacakan dengan nada sedih:", "Berbisik:", "Bicaralah perlahan:", "Baca seperti penyiar berita:", "Ucapkan dengan suara robot:", "Katakan dengan antusias:", "Baca dengan nada datar:", "Ucapkan dengan nada marah:", "Bicaralah dengan cepat:", "Nyanyikan teks ini:",
+        ];
+
+        function populateStyles() {
+            styleSelect.innerHTML = '<option value="">Pilih Gaya Intonasi...</option>';
+            styles.forEach(style => {
+                const option = document.createElement('option');
+                option.value = style;
+                option.textContent = style;
+                styleSelect.appendChild(option);
+            });
+        }
+        
+        voices.forEach(voice => {
+            const option = document.createElement('option');
+            option.value = voice.name;
+            option.textContent = voice.description;
+            voiceSelect.appendChild(option);
+        });
+        
+        populateStyles();
+
+        temperatureSlider.addEventListener('input', () => {
+            temperatureValue.textContent = parseFloat(temperatureSlider.value).toFixed(1);
+        });
+
+        styleSelect.addEventListener('change', () => {
+            const selectedStyle = styleSelect.value;
+            if (selectedStyle) {
+                let currentText = textInput.value;
+                const isSsml = currentText.trim().startsWith('<speak>');
+                if (isSsml) {
+                    currentText = currentText.replace(/<\/?speak>/g, '').trim();
+                }
+                let cleanText = currentText;
+                styles.forEach(style => {
+                    if (cleanText.startsWith(style)) {
+                        cleanText = cleanText.substring(style.length).trim();
+                    }
+                });
+                let newText = `${selectedStyle} ${cleanText}`.trim();
+                if (isSsml) {
+                    newText = `<speak>\n  ${newText}\n</speak>`;
+                }
+                textInput.value = newText;
+                textInput.focus();
+            }
+            styleSelect.selectedIndex = 0;
+        });
+
+        function base64ToArrayBuffer(base64) {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function pcmToWav(pcmData, sampleRate) {
+            const numChannels = 1;
+            const bitsPerSample = 16;
+            const dataSize = pcmData.byteLength;
+            const buffer = new ArrayBuffer(44 + dataSize);
+            const view = new DataView(buffer);
+            const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+            const blockAlign = numChannels * (bitsPerSample / 8);
+
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + dataSize, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitsPerSample, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataSize, true);
+
+            const pcm16 = new Int16Array(pcmData);
+            for (let i = 0; i < pcm16.length; i++) {
+                view.setInt16(44 + i * 2, pcm16[i], true);
+            }
+
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+        
+        async function makeApiCall(payload) {
+             let attempts = 0;
+             let delay = 1000;
+             const activeKeysCount = (getCustomApiKeys().length || apiKeys.length);
+             const maxAttempts = activeKeysCount * 2; // Coba semua API key 2 kali
+             
+             while (attempts < maxAttempts) {
+                 const currentApiKey = getNextApiKey();
+                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${currentApiKey}`;
+                 
+                 try {
+                     const response = await fetch(apiUrl, {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify(payload)
+                     });
+                     
+                     if (response.ok) {
+                         console.log(`✅ Berhasil menggunakan API key index: ${(currentApiKeyIndex - 1 + apiKeys.length) % apiKeys.length}`);
+                         return await response.json();
+                     }
+                     
+                     if (response.status === 429 || response.status >= 500) {
+                         console.log(`⚠️ API key error (${response.status}), mencoba API key berikutnya...`);
+                         attempts++;
+                         await new Promise(resolve => setTimeout(resolve, delay));
+                         delay = Math.min(delay * 1.5, 5000); // Max 5 detik delay
+                         continue;
+                     } else {
+                         let errorText = `HTTP error! Status: ${response.status}`;
+                         try {
+                             const errorData = await response.json();
+                             errorText = errorData.error?.message || JSON.stringify(errorData);
+                         } catch (e) {
+                             errorText = await response.text() || errorText;
+                         }
+                         console.log(`❌ API key error: ${errorText}, mencoba API key berikutnya...`);
+                         attempts++;
+                         continue;
+                     }
+                 } catch (networkError) {
+                     console.log(`🌐 Network error: ${networkError.message}, mencoba API key berikutnya...`);
+                     attempts++;
+                     await new Promise(resolve => setTimeout(resolve, delay));
+                     continue;
+                 }
+             }
+             throw new Error("Semua API key telah dicoba namun gagal. Silakan coba lagi nanti.");
+        }
+
+        async function generateSpeech() {
+            const text = textInput.value.trim();
+            const voiceName = voiceSelect.value;
+            const temperature = parseFloat(temperatureSlider.value);
+            
+            if (!text) {
+                showError("Silakan masukkan teks terlebih dahulu.");
+                return;
+            }
+            
+            if (!voiceName) {
+                showError("Silakan pilih suara terlebih dahulu.");
+                return;
+            }
+            
+            setLoading(true);
+            
+            try {
+                const payload = {
+                    contents: [{ parts: [{ text: text }] }],
+                    generationConfig: {
+                        temperature: temperature,
+                        responseModalities: ["AUDIO"],
+                        speechConfig: { 
+                            voiceConfig: { 
+                                prebuiltVoiceConfig: { voiceName: voiceName } 
+                            } 
+                        }
+                    },
+                    model: "gemini-2.5-flash-preview-tts"
+                };
+                
+                const result = await makeApiCall(payload);
+                const part = result?.candidates?.[0]?.content?.parts?.[0];
+                const audioData = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType;
+
+                if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                    const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                    const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 24000;
+                    
+                    const pcmBuffer = base64ToArrayBuffer(audioData);
+                    const wavBlob = pcmToWav(pcmBuffer, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+                    
+                    audioPlayer.src = audioUrl;
+                    audioOutput.classList.remove('hidden');
+                    errorMessage.classList.add('hidden');
+                    showSuccess("🎉 Audio berhasil dibuat! Klik play untuk mendengarkan.");
+                    audioPlayer.play();
+                } else {
+                    throw new Error("Struktur respons audio tidak valid. Cek kembali format SSML atau teks Anda.");
+                }
+            } catch (error) {
+                console.error("Error (TTS):", error);
+                showError(`❌ ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        }
+        
+        function setLoading(isLoading) {
+            const buttons = [generateBtn];
+            if (isLoading) {
+                loader.classList.remove('hidden');
+                buttons.forEach(btn => { btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed'); });
+                errorMessage.classList.add('hidden');
+                audioOutput.classList.add('hidden');
+            } else {
+                loader.classList.add('hidden');
+                buttons.forEach(btn => { btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); });
+            }
+        }
+        
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+            errorMessage.style.color = '#ef4444';
+            audioOutput.classList.add('hidden');
+        }
+
+        function showSuccess(message) {
+             errorMessage.textContent = message;
+             errorMessage.classList.remove('hidden');
+             errorMessage.style.color = '#16a34a';
+        }
+
+        generateBtn.addEventListener('click', generateSpeech);
+    </script>
+        </div>
+    </div>
+</body>
+</html>
+

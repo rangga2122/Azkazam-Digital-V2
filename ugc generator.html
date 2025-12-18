@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UGC Content Generator - AzkazamDigital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fff7ed; /* Orange-50 equivalent for warmer bg or keep gray */
+            background-color: #f3f4f6; /* Keeping gray for neutral background */
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #ea580c, #c2410c); /* Orange Gradient */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(234, 88, 12, 0.07); /* Orange shadow hint */
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #ea580c; /* Orange Loader */
+            width: 20px;
+            height: 20px;
+            -webkit-animation: spin 1s linear infinite; /* Safari */
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fdba74; /* Orange-300 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #fb923c; /* Orange-400 */
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navbar removed as requested -->
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <div class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Generator Konten UGC</h1>
+            <p class="text-gray-600">Buat skrip, caption, dan strategi konten viral dalam hitungan detik.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- LEFT COLUMN: INPUTS -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- Image Upload Section -->
+                <div class="glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-gray-800"><i class="fa-regular fa-image mr-2 text-orange-500"></i>Upload Produk</h2>
+                        <span class="text-xs text-gray-400">(Opsional)</span>
+                    </div>
+                    
+                    <div class="w-full relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-orange-500 transition-colors cursor-pointer bg-gray-50 group" id="dropZone">
+                        <input type="file" id="productImage" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="previewImage(this)">
+                        <div id="uploadPlaceholder">
+                            <div class="mx-auto h-12 w-12 text-gray-400 group-hover:text-orange-500 transition-colors">
+                                <i class="fa-solid fa-cloud-arrow-up text-3xl"></i>
+                            </div>
+                            <p class="mt-2 text-sm text-gray-600 font-medium">Klik atau drag gambar di sini</p>
+                            <p class="mt-1 text-xs text-gray-400">PNG, JPG up to 5MB</p>
+                        </div>
+                        <img id="imagePreview" class="hidden max-h-48 mx-auto rounded-lg shadow-md object-contain" alt="Product Preview">
+                        <button id="removeImageBtn" onclick="removeImage(event)" class="hidden absolute top-2 right-2 bg-white rounded-full p-1 shadow-md text-red-500 hover:text-red-700 z-10">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <div id="imageAnalysisTag" class="hidden mt-3 flex items-center justify-center text-xs text-green-600 bg-green-50 p-2 rounded-lg">
+                        <i class="fa-solid fa-check-circle mr-2"></i> Gambar teranalisis oleh AI
+                    </div>
+                </div>
+
+                <!-- Form Section -->
+                <div class="glass-card rounded-2xl p-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-5"><i class="fa-solid fa-sliders mr-2 text-orange-500"></i>Detail Konten</h2>
+                    
+                    <div class="space-y-4">
+                        <!-- Product Name -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Produk</label>
+                            <input type="text" id="productName" placeholder="Contoh: Kerupuk Bawang Vita Rasa" class="w-full rounded-lg border-gray-300 border px-4 py-2.5 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all shadow-sm text-sm">
+                        </div>
+
+                        <!-- Category -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Kategori Produk</label>
+                            <div class="relative">
+                                <select id="productCategory" class="w-full rounded-lg border-gray-300 border px-4 py-2.5 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none appearance-none bg-white shadow-sm text-sm cursor-pointer">
+                                    <option value="" disabled selected>Pilih kategori</option>
+                                    <option value="fashion">Fashion & Gaya</option>
+                                    <option value="beauty">Kecantikan & Perawatan</option>
+                                    <option value="food">Makanan & Minuman</option>
+                                    <option value="tech">Teknologi & Gadget</option>
+                                    <option value="home">Rumah & Gaya Hidup</option>
+                                    <option value="health">Kesehatan & Kebugaran</option>
+                                    <option value="other">Lainnya</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scene Count Selection -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Adegan (Scene)</label>
+                            <div class="relative">
+                                <select id="sceneCount" class="w-full rounded-lg border-gray-300 border px-4 py-2.5 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none appearance-none bg-white shadow-sm text-sm cursor-pointer">
+                                    <option value="3">3 Adegan (Cepat/Singkat)</option>
+                                    <option value="4">4 Adegan (Standar)</option>
+                                    <option value="5" selected>5 Adegan (Detail)</option>
+                                    <option value="6">6 Adegan (Storytelling)</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Platform -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Platform Target</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="platform" value="tiktok" class="peer sr-only" checked>
+                                    <div class="rounded-lg border border-gray-200 p-2 text-center peer-checked:border-orange-500 peer-checked:bg-orange-50 peer-checked:text-orange-700 transition-all hover:bg-gray-50">
+                                        <i class="fa-brands fa-tiktok mr-1"></i> <span class="text-sm">TikTok</span>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="platform" value="instagram" class="peer sr-only">
+                                    <div class="rounded-lg border border-gray-200 p-2 text-center peer-checked:border-orange-500 peer-checked:bg-orange-50 peer-checked:text-orange-700 transition-all hover:bg-gray-50">
+                                        <i class="fa-brands fa-instagram mr-1"></i> <span class="text-sm">Instagram</span>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="platform" value="youtube" class="peer sr-only">
+                                    <div class="rounded-lg border border-gray-200 p-2 text-center peer-checked:border-orange-500 peer-checked:bg-orange-50 peer-checked:text-orange-700 transition-all hover:bg-gray-50">
+                                        <i class="fa-brands fa-youtube mr-1"></i> <span class="text-sm">Shorts</span>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="platform" value="facebook" class="peer sr-only">
+                                    <div class="rounded-lg border border-gray-200 p-2 text-center peer-checked:border-orange-500 peer-checked:bg-orange-50 peer-checked:text-orange-700 transition-all hover:bg-gray-50">
+                                        <i class="fa-brands fa-facebook mr-1"></i> <span class="text-sm">Reels</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Content Type -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Konten</label>
+                            <div class="relative">
+                                <select id="contentType" class="w-full rounded-lg border-gray-300 border px-4 py-2.5 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none appearance-none bg-white shadow-sm text-sm cursor-pointer">
+                                    <option value="" disabled selected>Pilih jenis konten</option>
+                                    <option value="review">Review Jujur / Produk</option>
+                                    <option value="unboxing">ASMR / Unboxing</option>
+                                    <option value="tutorial">Tutorial / Cara Pakai</option>
+                                    <option value="comparison">Perbandingan (Vs)</option>
+                                    <option value="storytelling">Storytelling / Lifestyle</option>
+                                    <option value="testimoni">Testimonial</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Generate Button -->
+                        <button onclick="generateContent()" id="generateBtn" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-[1.02] shadow-lg flex items-center justify-center mt-6">
+                            <span id="btnText"><i class="fa-solid fa-wand-sparkles mr-2"></i>Generate Konten UGC</span>
+                            <div id="btnLoader" class="loader ml-2 hidden border-white border-t-orange-600"></div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: OUTPUT -->
+            <div class="lg:col-span-7">
+                <div id="emptyState" class="h-full flex flex-col items-center justify-center bg-white rounded-2xl border-2 border-dashed border-gray-200 p-10 text-center min-h-[500px]">
+                    <div class="bg-orange-50 p-4 rounded-full mb-4">
+                        <i class="fa-solid fa-robot text-4xl text-orange-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Siap Membuat Konten?</h3>
+                    <p class="text-gray-500 max-w-sm">Isi formulir di sebelah kiri dan biarkan AI kami membuatkan skrip viral untuk brand Anda.</p>
+                </div>
+
+                <div id="resultState" class="hidden space-y-6">
+                    
+                    <!-- Results Card -->
+                    <div class="glass-card rounded-2xl overflow-hidden border-t-4 border-orange-500">
+                        
+                        <!-- Header Result -->
+                        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                            <h3 class="font-bold text-gray-800 flex items-center">
+                                <i class="fa-solid fa-file-lines mr-2 text-orange-600"></i> Hasil Generasi UGC
+                            </h3>
+                            <div class="flex gap-2">
+                                <span id="resPlatform" class="px-2 py-1 bg-black text-white text-xs rounded font-bold capitalize">TikTok</span>
+                                <span id="resCategory" class="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded font-bold capitalize">Food</span>
+                            </div>
+                        </div>
+
+                        <div class="p-6 space-y-6">
+                            
+                            <!-- Caption & Hashtags -->
+                            <div class="space-y-3">
+                                <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Caption & Hashtags</label>
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 relative group">
+                                    <p id="generatedCaption" class="text-sm text-gray-800 whitespace-pre-line font-medium mb-3">...</p>
+                                    <p id="generatedHashtags" class="text-sm text-blue-600">...</p>
+                                    <button onclick="copyToClipboard('captionArea')" class="absolute top-2 right-2 bg-white p-2 rounded-lg shadow-sm text-gray-500 hover:text-orange-600 border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity" title="Copy Caption">
+                                        <i class="fa-regular fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Script Area -->
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-end">
+                                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Script Video (Scene by Scene)</label>
+                                    <span class="text-xs text-gray-400 italic bg-yellow-50 px-2 py-1 rounded text-yellow-700 border border-yellow-100">
+                                        <i class="fa-solid fa-lightbulb mr-1"></i> Tips: Gunakan nada cepat (8 detik vibe)
+                                    </span>
+                                </div>
+                                
+                                <div class="bg-white border border-gray-200 rounded-xl overflow-hidden relative group">
+                                    <!-- Script Content -->
+                                    <div id="generatedScript" class="p-5 text-sm space-y-4 text-gray-700">
+                                        <!-- Dynamic Content will be injected here -->
+                                    </div>
+                                    
+                                    <!-- Copy Button Float -->
+                                    <div class="absolute top-4 right-4">
+                                        <button onclick="copyToClipboard('scriptArea')" class="bg-orange-50 hover:bg-orange-100 text-orange-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center shadow-sm border border-orange-200">
+                                            <i class="fa-regular fa-copy mr-1.5"></i> Copy All
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hidden textarea for copying -->
+                            <textarea id="captionArea" class="hidden"></textarea>
+                            <textarea id="scriptArea" class="hidden"></textarea>
+
+                        </div>
+                        
+                        <!-- Action Bar -->
+                        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+                            <button onclick="resetForm()" class="text-sm text-gray-500 hover:text-gray-700 font-medium">
+                                <i class="fa-solid fa-rotate-right mr-1"></i> Reset
+                            </button>
+                            <button onclick="copyAll()" class="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-md">
+                                <i class="fa-solid fa-clipboard mr-2"></i> Copy All Result
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
+            <p class="text-sm text-gray-500 text-center md:text-left">
+                &copy; 2025 AzkazamDigital.com - All Rights Reserved
+            </p>
+            <div class="mt-2 md:mt-0 flex items-center space-x-2 text-sm text-gray-400">
+                <i class="fa-solid fa-bolt text-yellow-400"></i>
+                <span>Powered by AI Technology</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center">
+        <i class="fa-solid fa-check-circle text-green-400 mr-2"></i>
+        <span id="toastMessage">Copied to clipboard!</span>
+    </div>
+
+    <script>
+        // --- DATA TEMPLATES ---
+
+        const categoryKeywords = {
+            fashion: {
+                adjectives: ["Nyaman banget dipakai seharian", "Desainnya timeless & stylish", "Bahannya premium parah", "Gampang di-mix & match", "Bikin look auto mahal"],
+                hooks: ["Sumpah, ini outfit terenak yang pernah aku pake, kalian wajib punya!", "Stop scroll dulu! Jangan ngaku fashionista kalau belum tau brand ini!", "Outfit hacks 2025 yang bikin penampilan auto mahal dalam 5 detik!"],
+                features_long: ["Bahannya tuh bener-bener jatuh dan adem banget, gak bikin gerah sama sekali.", "Jahitannya super rapi, detailnya juara, pokoknya worth every penny deh!"],
+                actions: ["Twirl / muter badan slow motion", "Zoom detail jahitan dan bahan", "Pose mirror selfie aesthetic", "Transisi ganti baju (finger snap)"]
+            },
+            beauty: {
+                adjectives: ["Teksturnya ringan banget", "Finish-nya glowing natural", "Coverage-nya mantul", "Gak bikin breakout", "Tahan seharian tanpa touch-up"],
+                hooks: ["Demi apa, kulit aku jadi glowing parah cuma gara-gara produk satu ini!", "Capek gak sih nyari skincare yang cocok? Tenang, aku udah nemuin solusinya buat kalian!", "Rahasia makeup tahan banting seharian, anti geser walau kena badai!"],
+                features_long: ["Teksturnya ringan banget kayak air, langsung nyerap tanpa rasa lengket sedikitpun.", "Finish-nya tuh flawless banget, pori-pori auto mingkem seketika!"],
+                actions: ["Swatches di tangan (close up)", "Apply ke pipi setengah wajah", "Tap-tap wajah hasil akhir", "Tunjukkan botol kosong (empty bottle)"]
+            },
+            food: {
+                adjectives: ["Rasanya pecah di mulut", "Kriuknya berisik banget", "Bumbunya medok parah", "Pedesnya nampol tapi nagih", "Manisnya pas gak bikin eneg"],
+                hooks: ["Sumpah ya, ini cemilan paling bahaya yang pernah aku coba, bikin gak bisa berhenti ngunyah!", "Hati-hati guys, jangan beli ini kalau kalian lagi diet, karena seenak itu woy!", "Definisi kenikmatan hakiki ada di sini, rasanya beneran pecah banget di mulut!"],
+                features_long: ["Rasa bumbunya tuh medok banget, gak pelit sama sekali, beneran nempel di lidah.", "Kriuknya itu lho, renyah banget sampai tetangga sebelah bisa denger!"],
+                actions: ["Gigit (bunyi kriuk ASMR)", "Zoom tekstur makanan (tarik/belah)", "Ekspresi merem melek menikmati", "Suapan besar ke kamera"]
+            },
+            tech: {
+                adjectives: ["Fiturnya canggih banget", "Baterainya awet berhari-hari", "Desainnya sleek dan modern", "Multitasking jadi sat-set", "Worth the price banget"],
+                hooks: ["Gila sih, gadget sekeren ini harganya masih masuk akal banget, fitur flagship harga mid-range!", "Nyesel banget baru tau sekarang, ternyata ini gadget yang selama ini aku cari-cari!", "Life hacks buat kalian yang mau produktif, wajib banget kepoin barang canggih ini!"],
+                features_long: ["Layarnya jernih banget, refresh rate tinggi bikin scrolling super mulus tanpa ngelag.", "Baterainya badak banget, dipake seharian full masih sisa banyak, gila sih!"],
+                actions: ["Tapping layar demonstrasi fitur", "Zoom port/kamera detail", "Demo kecepatan loading app", "Compare side-by-side dengan barang lama"]
+            },
+            home: {
+                adjectives: ["Bikin ruangan jadi aesthetic", "Super fungsional dan praktis", "Hemat tempat banget", "Kualitasnya kokoh", "Solusi rumah rapi"],
+                hooks: ["Kamar berantakan bikin stress? Nih aku kasih tau rahasia kamar estetik low budget!", "Anak kos wajib merapat! Barang ini bakal nyelamatin hidup kalian banget!", "Ibu-ibu pasti setuju, ini solusi terbaik buat rumah jadi rapi dalam sekejap!"],
+                features_long: ["Desainnya minimalis tapi fungsional banget, bikin ruangan sempit jadi lega.", "Bahannya kokoh banget, bukan plastik ecek-ecek, dijamin awet bertahun-tahun."],
+                actions: ["Before/After ruangan", "Cara pasang/rakit timelapse", "Simulasi penggunaan sehari-hari", "Wide shot ruangan yang rapi"]
+            },
+            health: {
+                adjectives: ["Badan jadi enteng banget", "Rasanya seger gak bau jamu", "Komposisinya 100% alami", "Efeknya kerasa cepet", "Mood booster seharian"],
+                hooks: ["Stop minum sembarangan! Mending cobain yang alami tapi efeknya beneran kerasa!", "Investasi kesehatan gak harus mahal kok, buktinya aku jadi fit banget pake ini!", "Badan sering pegel linu? Fix kalian butuh asupan ajaib yang satu ini!"],
+                features_long: ["Rasanya seger banget, gak ada bau aneh-aneh, enak banget diminum dingin.", "Efeknya langsung kerasa di badan, bangun tidur jadi jauh lebih fresh."],
+                actions: ["Minum/Konsumsi dengan nikmat", "Gerakan olahraga semangat", "Tunjuk komposisi di kemasan", "Senyum bugar ke kamera"]
+            },
+            other: {
+                adjectives: ["Unik dan jarang ada yang punya", "Sangat membantu keseharian", "Harganya masuk akal banget", "Kualitas di atas rata-rata", "Best purchase tahun ini"],
+                hooks: ["Aku nemu barang random di internet tapi ternyata fungsinya beneran mind-blowing!", "Jangan bilang siapa-siapa, ini rahasia aku buat hidup lebih gampang!", "Cuma modal receh tapi bisa dapet barang sekualitas ini? Mimpi apa semalam!"],
+                features_long: ["Kualitas materialnya solid banget, finishingnya halus, gak kelihatan barang murah.", "Cara pakainya gampang banget, gak pake ribet, langsung sat-set selesai."],
+                actions: ["Unboxing paket pelan-pelan", "Pegang produk putar 360", "Tunjuk fitur unggulan", "Thumbs up dua jempol"]
+            }
+        };
+
+        // --- FUNCTIONS ---
+
+        function previewImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imagePreview').classList.remove('hidden');
+                    document.getElementById('uploadPlaceholder').classList.add('hidden');
+                    document.getElementById('removeImageBtn').classList.remove('hidden');
+                    
+                    // Simulate AI Analysis
+                    setTimeout(() => {
+                        document.getElementById('imageAnalysisTag').classList.remove('hidden');
+                    }, 800);
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeImage(e) {
+            e.preventDefault(); // Prevent clicking file input behind btn
+            const input = document.getElementById('productImage');
+            input.value = "";
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('imagePreview').src = "";
+            document.getElementById('uploadPlaceholder').classList.remove('hidden');
+            document.getElementById('removeImageBtn').classList.add('hidden');
+            document.getElementById('imageAnalysisTag').classList.add('hidden');
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function generateContent() {
+            // Get Inputs
+            const productName = document.getElementById('productName').value.trim();
+            const category = document.getElementById('productCategory').value;
+            const platform = document.querySelector('input[name="platform"]:checked').value;
+            const contentType = document.getElementById('contentType').value;
+            const sceneCount = parseInt(document.getElementById('sceneCount').value);
+
+            // Validation
+            if (!productName || !category || !contentType) {
+                showToast("Mohon lengkapi Nama Produk, Kategori, dan Jenis Konten!");
+                return;
+            }
+
+            // Loading UI
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+            const generateBtn = document.getElementById('generateBtn');
+
+            btnText.innerText = "Menganalisa...";
+            btnLoader.classList.remove('hidden');
+            generateBtn.disabled = true;
+            generateBtn.classList.add('opacity-75', 'cursor-not-allowed');
+
+            // Simulate AI Delay
+            setTimeout(() => {
+                createScript(productName, category, platform, contentType, sceneCount);
+                
+                // Reset UI
+                btnText.innerHTML = '<i class="fa-solid fa-wand-sparkles mr-2"></i>Generate Konten UGC';
+                btnLoader.classList.add('hidden');
+                generateBtn.disabled = false;
+                generateBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                
+                // Switch View
+                document.getElementById('emptyState').classList.add('hidden');
+                document.getElementById('resultState').classList.remove('hidden');
+                
+                // Update Badges
+                document.getElementById('resPlatform').innerText = platform;
+                document.getElementById('resCategory').innerText = category;
+
+            }, 1500);
+        }
+
+        function getRandom(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        // Helper to generate category specific hashtags
+        function getExtendedHashtags(category, productName, platform) {
+            const cleanName = productName.replace(/\s/g, '');
+            const commonTags = `#${cleanName} #RacunShopee #SpillProduk #ReviewJujur #UGCIndonesia`;
+            
+            let categoryTags = "";
+            switch(category) {
+                case 'fashion': categoryTags = "#OOTDIndo #FashionHacks #OutfitKekinian #Gayaditiktok"; break;
+                case 'beauty': categoryTags = "#SkincareRoutine #BeautyHacks #MakeUpTutorial #GlowingSkin"; break;
+                case 'food': categoryTags = "#KulinerViral #MukbangIndo #JajananKekinian #FoodieIndo"; break;
+                case 'tech': categoryTags = "#GadgetIn #Teknologi #TipsGadget #UnboxingGadget"; break;
+                case 'home': categoryTags = "#DekorasiKamar #HomeDecorIndo #RumahMinimalis #AnakKos"; break;
+                case 'health': categoryTags = "#HidupSehat #TipsDiet #OlahragaDirumah #HealthyLifestyle"; break;
+                default: categoryTags = "#SerbaSerbi #Unik #BarangViral #LifeHacks"; break;
+            }
+
+            return `${commonTags}\n${categoryTags}`;
+        }
+
+        function createScript(productName, category, platform, type, sceneCount) {
+            const data = categoryKeywords[category] || categoryKeywords['other'];
+            
+            // 1. Generate Caption (Simple for this update focus)
+            const introHook = getRandom(data.hooks);
+            const ctaLink = platform === 'instagram' ? "Link di bio no. 15!" : "Keranjang kuning! 👇";
+            const caption = `${introHook} 😱\n\nJujur, ${productName} ini beneran life changer banget! ${data.features_long[0]}\n\n${ctaLink}`;
+            const hashtags = getExtendedHashtags(category, productName, platform);
+
+            // 2. Generate Script Scenes (DYNAMIC LOOP)
+            let scriptHTML = "";
+            let fullScriptText = ""; // For Copy All
+
+            // Define Scenes Logic
+            // We need to map 3-6 scenes to logical flow: Hook -> Problem -> Feature -> Benefit -> CTA
+            
+            // SCENE 1: HOOK (Always)
+            const hookAudio = `(Lip-sync Bahasa Indonesia): "${introHook} Serius, jangan skip dulu kalau gak mau nyesel!"`;
+            scriptHTML += buildScene(1, `(Lip-sync/Voiceover) Close up wajah/produk, ekspresi kaget/excited`, hookAudio, "2-3");
+            fullScriptText += `Adegan 1: ${hookAudio}\n`;
+
+            // SCENE 2: PROBLEM/INTRO (Always)
+            const problemAudio = `(Lip-sync Bahasa Indonesia): "Jujur capek banget kan nyari produk yang pas tapi zonk terus? Nah, kenalin nih ${productName}."`;
+            scriptHTML += buildScene(2, `(Menunjukkan masalah atau memegang produk dengan jelas)`, problemAudio, "3-4");
+            fullScriptText += `Adegan 2: ${problemAudio}\n`;
+
+            // MIDDLE SCENES (Features)
+            let currentScene = 3;
+            let featuresNeeded = sceneCount - 3; // Total - Hook - Problem - CTA
+
+            if (featuresNeeded > 0) {
+                // Feature 1
+                let action = getRandom(data.actions);
+                if (category === 'food') action = "Gigit/Makan produk (ASMR)";
+                const featAudio1 = `(Lip-sync Bahasa Indonesia): "Liat deh detailnya! ${data.features_long[0]} Beneran gak kaleng-kaleng kan?"`;
+                scriptHTML += buildScene(currentScene, `(${action}, lighting terang fokus ke produk)`, featAudio1, "4-5");
+                fullScriptText += `Adegan ${currentScene}: ${featAudio1}\n`;
+                currentScene++;
+                featuresNeeded--;
+            }
+
+            if (featuresNeeded > 0) {
+                // Feature 2 / Benefit
+                const featAudio2 = `(Lip-sync Bahasa Indonesia): "Gak cuma itu, ${data.features_long[1]} Asli sih ini worth it banget buat dicoba!"`;
+                scriptHTML += buildScene(currentScene, `(Demo penggunaan produk lebih detail / zoom in)`, featAudio2, "4-5");
+                fullScriptText += `Adegan ${currentScene}: ${featAudio2}\n`;
+                currentScene++;
+                featuresNeeded--;
+            }
+
+             if (featuresNeeded > 0) {
+                // Social Proof / Emotion
+                const socialAudio = `(Lip-sync Bahasa Indonesia): "Banyak banget yang udah buktiin dan hasilnya emang sengaruh itu, masa kalian mau ketinggalan sih?"`;
+                scriptHTML += buildScene(currentScene, `(Tunjukkan testimoni di HP atau ekspresi happy)`, socialAudio, "3-4");
+                fullScriptText += `Adegan ${currentScene}: ${socialAudio}\n`;
+                currentScene++;
+            }
+
+            // FINAL SCENE: CTA (Always)
+            let ctaText = "Langsung aja cek keranjang kuning sekarang juga, mumpung stoknya masih ada, buruan!";
+            if (platform === 'instagram') ctaText = "Langsung klik link di bio aku sekarang juga, jangan sampai kehabisan promonya ya!";
+            
+            const ctaAudio = `(Lip-sync Bahasa Indonesia): "${ctaText}"`;
+            scriptHTML += buildScene(currentScene, `(Menunjuk ke arah tombol beli/link bio sambil tersenyum)`, ctaAudio, "3");
+            fullScriptText += `Adegan ${currentScene}: ${ctaAudio}\n`;
+
+
+            // Render Output
+            document.getElementById('generatedCaption').innerText = caption;
+            document.getElementById('generatedHashtags').innerText = hashtags;
+            document.getElementById('generatedScript').innerHTML = scriptHTML;
+            
+            // Update Hidden Textareas for Copy Functionality
+            document.getElementById('captionArea').value = `${caption}\n\n${hashtags}`;
+            
+            // Update script text for "Copy All" logic
+            const cleanScript = fullScriptText; 
+            document.getElementById('scriptArea').value = cleanScript;
+        }
+
+        function buildScene(num, visual, audio, duration) {
+            // Extract just the text inside quotes for the copy button
+            const cleanAudioText = audio.match(/"([^"]+)"/)?.[1] || audio;
+
+            return `
+            <div class="border-l-4 border-orange-200 pl-4 py-2 mb-4 bg-gray-50 rounded-r-lg">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-orange-900 text-sm bg-orange-100 px-2 py-0.5 rounded">Adegan ${num}</span>
+                    <span class="text-xs text-gray-500">± ${duration} det</span>
+                </div>
+                
+                <div class="mb-2">
+                    <p class="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">Visual</p>
+                    <p class="text-sm text-gray-700">${visual}</p>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-start">
+                         <p class="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">Audio / Lip-sync</p>
+                         <button onclick="copyText('${cleanAudioText}')" class="text-xs flex items-center text-orange-600 hover:text-orange-800 font-medium transition-colors bg-white border border-orange-100 px-2 py-1 rounded shadow-sm">
+                            <i class="fa-regular fa-copy mr-1"></i> Copy Audio
+                         </button>
+                    </div>
+                    <p class="text-sm text-gray-900 font-medium italic leading-relaxed">"${cleanAudioText}"</p>
+                </div>
+            </div>`;
+        }
+
+        function copyText(text) {
+             // Menambahkan template prefix sesuai permintaan
+             const template = "Buatkan lypsing pakai bahasa indonesia : ";
+             const fullText = template + text;
+
+             navigator.clipboard.writeText(fullText).then(() => {
+                showToast("Audio + Template berhasil disalin!");
+            }).catch(err => {
+                const textArea = document.createElement("textarea");
+                textArea.value = fullText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast("Audio + Template berhasil disalin!");
+            });
+        }
+
+        function copyToClipboard(elementId) {
+            let text = document.getElementById(elementId).value;
+            
+            if (elementId === 'scriptArea') {
+                 // Regenerate readable text from DOM to ensure it captures latest state
+                 text = "";
+                 const scenes = document.querySelectorAll('#generatedScript > div');
+                 scenes.forEach((scene, idx) => {
+                     const audioText = scene.querySelector('p.italic').innerText;
+                     const visualText = scene.querySelectorAll('p.text-sm')[0].innerText;
+                     text += `Adegan ${idx+1}:\nVisual: ${visualText}\nAudio: ${audioText}\n\n`;
+                 });
+            }
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Berhasil disalin!");
+            });
+        }
+
+        function copyAll() {
+            const caption = document.getElementById('captionArea').value;
+            let scriptText = "--- SCRIPT ---\n\n";
+            
+            const scenes = document.querySelectorAll('#generatedScript > div');
+            scenes.forEach((scene, idx) => {
+                const audioText = scene.querySelector('p.italic').innerText;
+                const visualText = scene.querySelectorAll('p.text-sm')[0].innerText;
+                scriptText += `Adegan ${idx+1}:\nVisual: ${visualText}\nAudio: ${audioText}\n\n`;
+            });
+
+            const fullText = `${scriptText}\n--- CAPTION ---\n${caption}`;
+            
+            navigator.clipboard.writeText(fullText).then(() => {
+                showToast("Semua konten disalin!");
+            });
+        }
+
+        function resetForm() {
+            document.getElementById('productName').value = '';
+            document.getElementById('productCategory').selectedIndex = 0;
+            document.getElementById('contentType').selectedIndex = 0;
+            document.getElementById('sceneCount').value = '5';
+            removeImage(new Event('click')); // Reset image
+            
+            document.getElementById('resultState').classList.add('hidden');
+            document.getElementById('emptyState').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

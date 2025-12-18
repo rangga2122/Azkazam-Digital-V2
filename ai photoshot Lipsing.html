@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Photoshoot Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .main-container {
+            display: block;
+        }
+        
+        .custom-radio input[type="radio"] { display: none; }
+        .custom-radio label {
+            display: block;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1; /* slate-300 */
+            background-color: white;
+            color: #334155; /* slate-700 */
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            font-weight: 500;
+            text-align: center;
+        }
+        .custom-radio label:hover {
+            border-color: theme('colors.blue.500');
+            background-color: #eff6ff; /* blue-50 */
+        }
+        
+        /* PERBAIKAN UTAMA DI SINI */
+        .custom-radio input[type="radio"]:checked + label {
+            background-color: #2563eb !important; /* blue-600 */
+            border-color: #2563eb !important; /* blue-600 */
+            color: white !important; /* Memaksa teks menjadi putih */
+            font-weight: 600;
+            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.3);
+        }
+        /* Penyesuaian khusus untuk label yang memiliki teks berwarna saat tidak aktif */
+         .custom-radio input[type="radio"]:checked + label .font-bold {
+            color: white !important;
+         }
+         .custom-radio input[type="radio"]:checked + label .text-slate-500 {
+            color: white !important;
+         }
+        
+        /* Navigation button styles */
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #2563eb !important;
+            color: white !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        .nav-button:not(.active):hover {
+            background-color: #f1f5f9;
+            transform: translateY(-1px);
+        }
+         .custom-radio input[type="radio"]:checked + label span {
+            color: white !important;
+         }
+         .custom-radio input[type="radio"]:checked + label svg {
+            stroke: white !important;
+         }
+         
+         /* Warna icon yang lebih hidup untuk tombol yang tidak dipilih */
+         .custom-radio label svg {
+            transition: all 0.2s ease-in-out;
+         }
+         /* Icon warna untuk gender */
+         #gender-woman + label svg, #ls-gender-woman + label svg { stroke: #ec4899; } /* pink-500 */
+         #gender-man + label svg, #ls-gender-man + label svg { stroke: #3b82f6; } /* blue-500 */
+         /* Icon warna untuk hijab */
+         #hijab-no + label svg, #ls-hijab-no + label svg { stroke: #10b981; } /* emerald-500 */
+         #hijab-yes + label svg, #ls-hijab-yes + label svg { stroke: #8b5cf6; } /* violet-500 */
+         /* Icon warna untuk shot type */
+         #shot-full + label svg, #ls-shot-full + label svg { stroke: #f59e0b; } /* amber-500 */
+         #shot-close + label svg, #ls-shot-close + label svg { stroke: #ef4444; } /* red-500 */
+         /* Icon warna untuk tema */
+         #theme-studio + label svg, #ls-theme-studio + label svg { stroke: #fbbf24; } /* amber-400 */
+         #theme-minimalist + label svg, #ls-theme-minimalist + label svg { stroke: #6b7280; } /* gray-500 */
+         #theme-cinematic + label svg, #ls-theme-cinematic + label svg { stroke: #7c3aed; } /* violet-600 */
+         #theme-outdoor + label svg, #ls-theme-outdoor + label svg { stroke: #22c55e; } /* emerald-600 */
+         #theme-vintage + label svg, #ls-theme-vintage + label svg { stroke: #92400e; } /* amber-700 */
+         #theme-corporate + label svg, #ls-theme-corporate + label svg { stroke: #475569; } /* slate-600 */
+         #theme-fantasy + label svg, #ls-theme-fantasy + label svg { stroke: #a855f7; } /* purple-500 */
+         #theme-cyberpunk + label svg, #ls-theme-cyberpunk + label svg { stroke: #22d3ee; } /* cyan-400 */
+         #theme-beach + label svg, #ls-theme-beach + label svg { stroke: #0ea5e9; } /* sky-500 */
+         #theme-snow + label svg, #ls-theme-snow + label svg { stroke: #93c5fd; } /* blue-300 */
+         #theme-home + label svg, #ls-theme-home + label svg { stroke: #f97316; } /* orange-500 */
+         #theme-cafe + label svg, #ls-theme-cafe + label svg { stroke: #57534e; } /* stone-600 */
+         #theme-urban-night + label svg, #ls-theme-urban-night + label svg { stroke: #6366f1; } /* indigo-500 */
+         /* Warna ikon tema baru */
+         #theme-tech-startup + label svg, #ls-theme-tech-startup + label svg { stroke: #06b6d4; } /* cyan-600 */
+         #theme-watercolor + label svg, #ls-theme-watercolor + label svg { stroke: #818cf8; } /* indigo-400 */
+         #theme-pop-art + label svg, #ls-theme-pop-art + label svg { stroke: #f43f5e; } /* rose-500 */
+         #theme-neon-noir + label svg, #ls-theme-neon-noir + label svg { stroke: #d946ef; } /* fuchsia-500 */
+         #theme-jungle + label svg, #ls-theme-jungle + label svg { stroke: #16a34a; } /* green-600 */
+         #theme-desert + label svg, #ls-theme-desert + label svg { stroke: #ca8a04; } /* yellow-600 */
+         #theme-garden + label svg, #ls-theme-garden + label svg { stroke: #db2777; } /* pink-600 */
+         #theme-kitchen + label svg, #ls-theme-kitchen + label svg { stroke: #64748b; } /* slate-500 */
+         #theme-picnic + label svg, #ls-theme-picnic + label svg { stroke: #78350f; } /* amber-800 */
+         #theme-gym + label svg, #ls-theme-gym + label svg { stroke: #334155; } /* slate-700 */
+         /* Icon warna untuk model selection */
+         #select-ai-model + label svg, #ls-select-ai-model + label svg { stroke: #3b82f6; } /* blue-500 */
+         #select-upload-model + label svg, #ls-select-upload-model + label svg { stroke: #6b7280; } /* gray-500 */
+
+        .lipsync-script-container {
+            padding: 0.75rem;
+            margin: 0.75rem 0.75rem 0;
+            background-color: #f1f5f9; /* slate-100 */
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0; /* slate-200 */
+            text-align: left;
+            position: relative;
+        }
+        .lipsync-script-container p {
+            font-family: 'Inter', sans-serif;
+            font-style: italic;
+            color: #334155; /* slate-700 */
+            margin: 0;
+            padding-right: 4rem; /* space for button */
+        }
+        .lipsync-script-container p::before {
+            content: '“';
+            font-size: 1.2em;
+            margin-right: 0.25rem;
+            color: #94a3b8; /* slate-400 */
+        }
+        .lipsync-script-container p::after {
+            content: '”';
+            font-size: 1.2em;
+            margin-left: 0.25rem;
+            color: #94a3b8; /* slate-400 */
+        }
+        .lipsync-script-container .copy-btn {
+            position: absolute;
+            top: 50%;
+            right: 0.75rem;
+            transform: translateY(-50%);
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { animation: spin 1s linear infinite; }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-6 lg:p-8">
+
+    <div class="bg-white w-full max-w-4xl mx-auto rounded-2xl shadow-xl border border-slate-200 overflow-hidden main-container">
+        <!-- Header -->
+        <header class="bg-slate-50 p-6 border-b border-slate-200">
+            <div class="text-slate-800 text-center mb-4">
+                <h1 class="text-5xl font-bold tracking-tight text-orange-500">VIDGRO PRO</h1>
+                <p class="text-sm text-slate-500">Photoshoot & Advertisement Creator</p>
+            </div>
+            <!-- Navigation Menu -->
+            <div class="flex justify-center space-x-2">
+                <button id="nav-photoshoot" class="nav-button px-6 py-2 rounded-lg font-semibold bg-slate-200 text-slate-700">
+                    AI Photoshoot
+                </button>
+                <button id="nav-lipsync" class="nav-button px-6 py-2 rounded-lg font-semibold bg-slate-200 text-slate-700">
+                    Lipsync Basic
+                </button>
+                <button id="nav-advertisement" class="nav-button px-6 py-2 rounded-lg font-semibold bg-slate-200 text-slate-700">
+                    Studio Iklan AI
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content for Photoshoot -->
+        <main id="photoshoot-content" class="p-6 sm:p-8 lg:p-10 w-full overflow-y-auto">
+            <div class="prose mb-8">
+                <h2 class="text-3xl font-extrabold tracking-tight text-slate-800">Langkah 1: Unggah Foto Produk Anda</h2>
+                <p class="text-slate-600">Pilih gambar produk utama yang ingin Anda tampilkan. Pastikan gambar jelas dan memiliki pencahayaan yang baik untuk hasil terbaik.</p>
+            </div>
+            <!-- Step 1: Upload Product Image -->
+            <div id="step-1" class="space-y-8">
+                <label for="product-image-upload" class="cursor-pointer group block w-full border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50 transition-colors rounded-xl p-8 text-center">
+                    <div id="product-upload-prompt" class="flex flex-col items-center space-y-4 text-slate-500 group-hover:text-blue-600 transition-colors">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <span class="font-semibold text-lg">Klik untuk memilih foto produk</span>
+                        <span class="text-sm">Format yang didukung: PNG, JPG, WEBP</span>
+                    </div>
+                     <div id="product-image-preview-container" class="hidden text-center space-y-4">
+                        <img id="product-image-preview" src="#" alt="Pratinjau Produk" class="max-h-52 mx-auto rounded-lg shadow-lg">
+                        <p class="text-blue-600 font-semibold flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                            Foto produk berhasil diunggah!
+                        </p>
+                    </div>
+                </label>
+                <input id="product-image-upload" type="file" accept="image/png, image/jpeg, image/webp" class="hidden">
+                 <div class="text-right">
+                    <button id="next-to-step-2" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 disabled:bg-slate-400 disabled:cursor-not-allowed disabled:shadow-none shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50" disabled>
+                        Lanjutkan
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Step 2: Choose Model & Options -->
+            <div id="step-2" class="hidden space-y-8">
+                <div class="prose">
+                    <h2 class="text-3xl font-extrabold tracking-tight text-slate-800">Langkah 2: Atur Gaya Pemotretan</h2>
+                     <p class="text-slate-600">Pilih antara menggunakan model AI atau mengunggah foto model Anda sendiri, lalu tentukan gaya pemotretan yang diinginkan.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6 h-full">
+                         <h3 class="text-xl font-bold text-center text-slate-800">Opsi Model</h3>
+                        <div class="custom-radio">
+                             <input type="radio" name="modelSelection" value="ai" id="select-ai-model" checked>
+                             <label for="select-ai-model" class="!border-2 !border-blue-500">
+                                 <span class="flex items-center gap-2">
+                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600"><path d="M9 12l2 2 4-4"/><path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/><path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/><path d="M12 3c0 1-1 3-3 3s-3-2-3-3 1-3 3-3 3 2 3 3"/><path d="M12 21c0-1 1-3 3-3s3 2 3 3-1 3-3 3-3-2-3-3"/></svg>
+                                     <span class="block font-bold text-blue-600">Gunakan Model Buatan AI</span>
+                                 </span>
+                                 <span class="text-sm text-slate-500">Rekomendasi</span>
+                             </label>
+                        </div>
+
+                        <div id="ai-model-options" class="space-y-4">
+                            <div class="custom-radio space-y-2">
+                                <p class="font-semibold text-slate-700 text-sm">Gender Model:</p>
+                                <div class="flex gap-3">
+                                    <div class="flex-1"><input type="radio" name="modelGender" value="woman" id="gender-woman" checked><label for="gender-woman"><span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.11"/></svg>Wanita</span></label></div>
+                                    <div class="flex-1"><input type="radio" name="modelGender" value="man" id="gender-man"><label for="gender-man"><span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><path d="m8.5 13.5 2.5-2.5 2.5 2.5"/><path d="M12 18.5v4.5"/><path d="M8 23h8"/></svg>Pria</span></label></div>
+                                </div>
+                            </div>
+                            <div id="hijab-option-container" class="custom-radio space-y-2">
+                                <p class="font-semibold text-slate-700 text-sm">Opsi Pakaian:</p>
+                                <div class="flex gap-3">
+                                    <div class="flex-1"><input type="radio" name="hijabOption" value="no" id="hijab-no" checked><label for="hijab-no"><span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Tidak Berhijab</span></label></div>
+                                    <div class="flex-1"><input type="radio" name="hijabOption" value="yes" id="hijab-yes"><label for="hijab-yes"><span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.5 2 6 4.5 6 8c0 1.5.5 3 1.5 4L12 22l4.5-10c1-1 1.5-2.5 1.5-4 0-3.5-2.5-6-6-6z"/><circle cx="12" cy="8" r="2"/></svg>Berhijab</span></label></div>
+                                </div>
+                            </div>
+                        </div>
+
+                         <div class="relative flex py-2 items-center">
+                            <div class="flex-grow border-t border-slate-300"></div><span class="flex-shrink mx-4 text-slate-400 text-sm font-semibold">ATAU</span><div class="flex-grow border-t border-slate-300"></div>
+                        </div>
+
+                        <div class="custom-radio">
+                             <input type="radio" name="modelSelection" value="upload" id="select-upload-model">
+                             <label for="select-upload-model" class="!border-slate-300 !text-slate-500">
+                                 <span class="flex items-center gap-2">
+                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                                     <span class="font-bold">Unggah Model Sendiri</span>
+                                 </span>
+                             </label>
+                        </div>
+                        <div id="upload-model-section" class="hidden">
+                             <label for="model-image-upload" class="cursor-pointer group block w-full border-2 border-dashed border-slate-300 hover:border-slate-500 transition-colors rounded-lg p-4">
+                                 <div id="model-upload-prompt" class="flex items-center gap-4 text-slate-500">
+                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                     <span class="font-medium text-sm">Pilih foto model referensi</span>
+                                 </div>
+                                  <div id="model-image-preview-container" class="hidden text-center space-y-2">
+                                     <img id="model-image-preview" src="#" alt="Pratinjau Model" class="max-h-24 mx-auto rounded-lg shadow-md">
+                                     <p class="text-blue-600 font-semibold text-sm">✓ Model diunggah!</p>
+                                 </div>
+                             </label>
+                            <input id="model-image-upload" type="file" accept="image/png, image/jpeg, image/webp" class="hidden">
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6 h-full">
+                         <h3 class="text-xl font-bold text-center text-slate-800">Gaya Pemotretan</h3>
+                        <div class="space-y-2">
+                            <h4 class="font-semibold text-slate-700 text-sm">Jenis Potret</h4>
+                            <div class="custom-radio grid grid-cols-2 gap-3">
+                                <div><input type="radio" name="shotType" value="full-body" id="shot-full" checked><label for="shot-full"><span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>Full Body</span></label></div>
+                                <div><input type="radio" name="shotType" value="close-up" id="shot-close"><label for="shot-close"><span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Close-Up</span></label></div>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <h4 class="font-semibold text-slate-700 text-sm">Tema Visual</h4>
+                            <div>
+                                <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Profesional</h5>
+                                <div class="custom-radio grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    <div><input type="radio" name="theme" value="clean studio photography, soft light" id="theme-studio" checked><label for="theme-studio" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>Studio</span></label></div>
+                                    <div><input type="radio" name="theme" value="minimalist, solid bright color background" id="theme-minimalist"><label for="theme-minimalist" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>Minimalis</span></label></div>
+                                    <div><input type="radio" name="theme" value="corporate setting, modern office background" id="theme-corporate"><label for="theme-corporate" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Korporat</span></label></div>
+                                    <div><input type="radio" name="theme" value="tech startup office, collaborative space, natural light" id="theme-tech-startup"><label for="theme-tech-startup" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.09 16.5c.34.52.57 1.14.66 1.82.1.68.06 1.32-.12 1.94-.18.62-.5 1.18-.94 1.62-.44.44-1 .76-1.62.94-.62.18-1.26.22-1.94.12-.68-.1-1.3-.32-1.82-.66C8.4 22.04 2 15.63 2 9.5 2 5.36 5.36 2 9.5 2s7.5 3.36 7.5 7.5c0 3.38-2.04 6.23-4.91 7z"/><path d="M12 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/><path d="M18.84 12.02c.36.03.7.17.98.42.53.48.81 1.17.81 1.9 0 1.29-1.01 2.52-2.3 2.66-.41-1.37-.2-2.84.59-4.11.33-.53.73-.99 1.17-1.39.1-.09.21-.17.32-.24.08-.05.16-.09.23-.14z"/></svg>Tech Startup</span></label></div>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Artistik</h5>
+                                <div class="custom-radio grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    <div><input type="radio" name="theme" value="cinematic, dramatic lighting, film grain" id="theme-cinematic"><label for="theme-cinematic" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="2" height="20" x="2" y="2" rx="1"/><rect width="2" height="20" x="20" y="2" rx="1"/><rect width="13" height="16" x="6" y="4" rx="2"/></svg>Cinematic</span></label></div>
+                                    <div><input type="radio" name="theme" value="vintage, retro filter, 90s fashion style" id="theme-vintage"><label for="theme-vintage" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>Vintage</span></label></div>
+                                    <div><input type="radio" name="theme" value="enchanted forest, magical glowing elements, fantasy style" id="theme-fantasy"><label for="theme-fantasy" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 22v-4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M22 12h-4"/><path d="m4.93 19.07 2.83-2.83"/><path d="m16.24 7.76 2.83-2.83"/></svg>Fantasi</span></label></div>
+                                    <div><input type="radio" name="theme" value="cyberpunk city, neon lights, futuristic" id="theme-cyberpunk"><label for="theme-cyberpunk" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Cyberpunk</span></label></div>
+                                    <div><input type="radio" name="theme" value="soft watercolor painting style, dreamy" id="theme-watercolor"><label for="theme-watercolor" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.94 2.94a2 2 0 0 0-2.88 0L2.94 10.06a2 2 0 0 0 0 2.88l5.23 5.23c.38.38.88.64 1.42.75.9.18 1.84-.2 2.47-.83l6.21-6.21a2 2 0 0 0 0-2.88l-5.23-5.23z"/><path d="M12 12h.01"/><path d="m21.12 12.12-5.23-5.23"/></svg>Watercolor</span></label></div>
+                                    <div><input type="radio" name="theme" value="bold pop art style, vibrant colors, halftone dots" id="theme-pop-art"><label for="theme-pop-art" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Pop Art</span></label></div>
+                                    <div><input type="radio" name="theme" value="dark moody scene with neon noir lighting" id="theme-neon-noir"><label for="theme-neon-noir" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Neon Noir</span></label></div>
+                                </div>
+                            </div>
+                             <div>
+                                <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Alam & Outdoor</h5>
+                                <div class="custom-radio grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                     <div><input type="radio" name="theme" value="outdoor, natural sunlight, urban street style" id="theme-outdoor"><label for="theme-outdoor" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>Outdoor</span></label></div>
+                                     <div><input type="radio" name="theme" value="tropical beach, clear blue water, sunny day" id="theme-beach"><label for="theme-beach" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a5 5 0 0 1-5-5c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.76-2.24 5-5 5z"/><path d="M12 12v9"/><path d="M17.5 17.5c-2.5-2.5-7.5-2.5-10 0"/></svg>Pantai</span></label></div>
+                                     <div><input type="radio" name="theme" value="snowy mountain peak, winter landscape" id="theme-snow"><label for="theme-snow" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>Salju</span></label></div>
+                                     <div><input type="radio" name="theme" value="lush tropical jungle, dappled sunlight" id="theme-jungle"><label for="theme-jungle" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22c1.25-.91 2.3-2.04 3.2-3.37C6.8 16.2 8.35 14 12 14c.85 0 1.67.23 2.41.65.98.53 2.11 1.16 3.42 1.16 2.5 0 4.17-1.67 4.17-4.17s-1.67-4.17-4.17-4.17A4.15 4.15 0 0 0 14 9.17c0 2.22 1.21 3.33 2.5 4.17.54.35 1.18.66 1.91.8.8.15 1.59-.12 2.09-.62"/></svg>Hutan Tropis</span></label></div>
+                                     <div><input type="radio" name="theme" value="vast desert landscape, golden hour" id="theme-desert"><label for="theme-desert" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 9.5c-2-.5-3-2-3-4C7 4 8 3 9 3s2 1 2 2.5c0 1.5-1 3-3 3.5m-3.5 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/><path d="M14 12.5c-2-.5-3-2-3-4C11 7 12 6 13 6s2 1 2 2.5c0 1.5-1 3-3 3.5m-3.5 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/><path d="M8.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>Gurun</span></label></div>
+                                     <div><input type="radio" name="theme" value="beautiful flower garden, colorful blossoms" id="theme-garden"><label for="theme-garden" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 0 0-10 10c0 4.4 3.6 8 8 8h4c4.4 0 8-3.6 8-8a10 10 0 0 0-10-10z"/></svg>Taman Bunga</span></label></div>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Gaya Hidup</h5>
+                                <div class="custom-radio grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                     <div><input type="radio" name="theme" value="cozy living room, warm interior lighting" id="theme-home"><label for="theme-home" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Rumah</span></label></div>
+                                     <div><input type="radio" name="theme" value="modern minimalist cafe, coffee shop ambiance" id="theme-cafe"><label for="theme-cafe" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h2a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><path d="M3 8h14v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>Kafe</span></label></div>
+                                     <div><input type="radio" name="theme" value="urban city street at night, bokeh lights" id="theme-urban-night"><label for="theme-urban-night" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-4.2 0-8 3.22-8 8.18 0 4.15 2.84 8.28 8 12.82 5.16-4.54 8-8.67 8-12.82C20 6.22 16.2 3 12 3z"/><circle cx="12" cy="10" r="3"/></svg>Kota Malam</span></label></div>
+                                     <div><input type="radio" name="theme" value="modern kitchen, cooking scene" id="theme-kitchen"><label for="theme-kitchen" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v2H3z"/><path d="M5 21h2v-8H5v8zm8-14c-1.66 0-3 1.34-3 3v9h6v-9c0-1.66-1.34-3-3-3z"/></svg>Dapur</span></label></div>
+                                     <div><input type="radio" name="theme" value="picnic in a park, sunny day, checkered blanket" id="theme-picnic"><label for="theme-picnic" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5"/><path d="M4 11v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V11"/><path d="M10 11V4"/><path d="M14 11V4"/><path d="M10 4a2 2 0 0 1-2-2h8a2 2 0 0 1-2 2z"/></svg>Piknik</span></label></div>
+                                     <div><input type="radio" name="theme" value="modern gym, fitness equipment in background" id="theme-gym"><label for="theme-gym" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9z"/><path d="M17.5 6.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9z"/><path d="M11 6h2v12h-2z"/></svg>Gym</span></label></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-slate-700">Deskripsi Produk <span class="text-red-600">(Wajib)</span></label>
+                            <textarea id="ls-product-description" rows="3" placeholder="Contoh: Tas ransel anti air dengan 3 kompartemen; bahan polyester premium; cocok untuk traveling dan kuliah; warna hitam, navy, abu-abu."
+                                class="w-full rounded-lg border border-slate-300 px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm resize-none"></textarea>
+                            <p class="text-xs text-slate-500">Isi deskripsi agar AI menulis skrip yang relevan.</p>
+                        </div>
+                        <div class="space-y-2">
+                            <h4 class="font-semibold text-slate-700 text-sm">Rasio Aspek</h4>
+                            <div class="custom-radio grid grid-cols-3 gap-3">
+                                <div><input type="radio" name="aspectRatio" value="9:16" id="ratio-portrait" checked><label for="ratio-portrait" class="!px-2 !py-2 text-sm">Potret (9:16)</label></div>
+                                <div><input type="radio" name="aspectRatio" value="1:1" id="ratio-square"><label for="ratio-square" class="!px-2 !py-2 text-sm">Persegi (1:1)</label></div>
+                                <div><input type="radio" name="aspectRatio" value="16:9" id="ratio-landscape"><label for="ratio-landscape" class="!px-2 !py-2 text-sm">Lanskap (16:9)</label></div>
+                            </div>
+                        </div>
+                         <div class="space-y-2">
+                            <h4 class="font-semibold text-slate-700 text-sm">Gaya Kustom (Opsional)</h4>
+                            <textarea id="custom-prompt" class="w-full bg-white border border-slate-300 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" rows="3" placeholder="Contoh: Gaya vaporwave, palet warna pastel, nuansa mimpi di pantai saat senja"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-between items-center pt-4">
+                    <button id="back-to-step-1" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-8 rounded-lg transition-colors duration-300">Kembali</button>
+                    <button id="generate-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50">
+                        Buat 6 Foto Produk
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Generation Result -->
+            <div id="step-3" class="hidden text-center space-y-8">
+                <div id="loading-state">
+                    <div class="flex flex-col items-center justify-center p-8 space-y-4">
+                        <div class="spinner w-16 h-16 border-4 border-t-blue-500 border-slate-200 rounded-full"></div>
+                        <div class="prose">
+                            <h2 class="text-3xl font-extrabold tracking-tight text-slate-800">AI sedang menyiapkan studio...</h2>
+                        <p class="text-slate-600">Mohon tunggu sejenak, kami sedang menciptakan visual yang sempurna untuk Anda. <span id="generation-progress" class="font-bold">0/6</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="result-state" class="hidden space-y-8">
+                    <div class="prose">
+                        <h2 class="text-3xl font-extrabold tracking-tight text-slate-800">✨ Sesi Foto Selesai! ✨</h2>
+                        <p class="text-slate-600">Berikut adalah hasil pemotretan produk Anda. Klik 'Lihat' untuk pratinjau atau 'Unduh' untuk menyimpan.</p>
+                    </div>
+                    <div id="result-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                    
+                    <div id="caption-section" class="hidden pt-8 border-t border-slate-200">
+                        <div class="prose mb-6">
+                            <h3 class="text-2xl font-bold tracking-tight text-slate-800">Butuh Ide Konten?</h3>
+                            <p class="text-slate-600">Biarkan AI membantu Anda menulis caption media sosial yang menarik untuk produk ini.</p>
+                        </div>
+                        <button id="generate-captions-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50">
+                            Buat Caption Otomatis
+                        </button>
+                        <div id="captions-container" class="mt-6 hidden text-left space-y-4 max-w-2xl mx-auto"></div>
+                    </div>
+
+                    <div class="mt-8 pt-8 border-t border-slate-200 flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="https://grok.com/imagine" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/50 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.45 4.75L6.34 6.34 4.75 12 3 10.55 1.5 16.25 7.21 15l-1.45 4.75L12 18l4.75 1.45L15 16.25 22.5 15l-1.45-4.75-1.59 1.59-4.21-1.45L12 3z"/></svg>
+                            <span>Buat Video Unlimited 1</span>
+                        </a>
+                        <a href="https://www.meta.ai/" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/50 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-4.44a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8.88a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-4.44z"/><path d="M18 12.5a4.5 4.5 0 0 1-4.5 4.5v0a4.5 4.5 0 0 1-4.5-4.5v-2a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v2z"/><path d="M12 10.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+                            <span>Buat Video Unlimited 2</span>
+                        </a>
+                    </div>
+
+                     <button id="start-over-button" class="bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 mt-8 shadow-lg shadow-slate-500/30 hover:shadow-xl hover:shadow-slate-500/50">
+                        Mulai Sesi Baru
+                    </button>
+                </div>
+                 <div id="error-state" class="hidden p-6 bg-red-50 border border-red-300 rounded-lg text-left">
+                    <h3 class="text-xl font-bold text-red-700">Oops, terjadi kesalahan!</h3>
+                    <p id="error-message" class="text-red-600 mt-2"></p>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Main Content for Lipsync -->
+        <main id="lipsync-content" class="p-6 sm:p-8 lg:p-10 w-full overflow-y-auto hidden">
+            <div class="prose mb-8">
+                <h2 class="text-3xl font-extrabold tracking-tight text-slate-800">Langkah 1: Unggah Foto Produk Anda</h2>
+                <p class="text-slate-600">Pilih gambar produk untuk dibuatkan foto dan skrip lipsync. Gambar yang jelas akan menghasilkan foto dan ide skrip yang lebih baik.</p>
+            </div>
+            <!-- Step 1: Upload Product Image -->
+            <div id="ls-step-1" class="space-y-8">
+                <label for="ls-product-image-upload" class="cursor-pointer group block w-full border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50 transition-colors rounded-xl p-8 text-center">
+                    <div id="ls-product-upload-prompt" class="flex flex-col items-center space-y-4 text-slate-500 group-hover:text-blue-600 transition-colors">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <span class="font-semibold text-lg">Klik untuk memilih foto produk</span>
+                        <span class="text-sm">Format yang didukung: PNG, JPG, WEBP</span>
+                    </div>
+                     <div id="ls-product-image-preview-container" class="hidden text-center space-y-4">
+                        <img id="ls-product-image-preview" src="#" alt="Pratinjau Produk" class="max-h-52 mx-auto rounded-lg shadow-lg">
+                        <p class="text-blue-600 font-semibold flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                            Foto produk berhasil diunggah!
+                        </p>
+                    </div>
+                </label>
+                <input id="ls-product-image-upload" type="file" accept="image/png, image/jpeg, image/webp" class="hidden">
+                 <div class="text-right">
+                    <button id="ls-next-to-step-2" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 disabled:bg-slate-400 disabled:cursor-not-allowed disabled:shadow-none shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50" disabled>
+                        Lanjutkan
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Step 2: Choose Model & Options -->
+            <div id="ls-step-2" class="hidden space-y-8">
+                <div class="prose">
+                    <h2 class="text-3xl font-extrabold tracking-tight text-slate-800">Langkah 2: Atur Gaya Pemotretan</h2>
+                     <p class="text-slate-600">Pilih model dan gaya pemotretan. AI akan membuatkan gambar dengan pose CTA dan skripnya.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6 h-full">
+                         <h3 class="text-xl font-bold text-center text-slate-800">Opsi Model</h3>
+                        <div class="custom-radio">
+                             <input type="radio" name="ls-modelSelection" value="ai" id="ls-select-ai-model" checked>
+                             <label for="ls-select-ai-model" class="!border-2 !border-blue-500">
+                                 <span class="flex items-center gap-2">
+                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600"><path d="M9 12l2 2 4-4"/><path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/><path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/><path d="M12 3c0 1-1 3-3 3s-3-2-3-3 1-3 3-3 3 2 3 3"/><path d="M12 21c0-1 1-3 3-3s3 2 3 3-1 3-3 3-3-2-3-3"/></svg>
+                                     <span class="block font-bold text-blue-600">Gunakan Model Buatan AI</span>
+                                 </span>
+                                 <span class="text-sm text-slate-500">Rekomendasi</span>
+                             </label>
+                        </div>
+
+                        <div id="ls-ai-model-options" class="space-y-4">
+                            <div class="custom-radio space-y-2">
+                                <p class="font-semibold text-slate-700 text-sm">Gender Model:</p>
+                                <div class="flex gap-3">
+                                    <div class="flex-1"><input type="radio" name="ls-modelGender" value="woman" id="ls-gender-woman" checked><label for="ls-gender-woman"><span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.11"/></svg>Wanita</span></label></div>
+                                    <div class="flex-1"><input type="radio" name="ls-modelGender" value="man" id="ls-gender-man"><label for="ls-gender-man"><span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><path d="m8.5 13.5 2.5-2.5 2.5 2.5"/><path d="M12 18.5v4.5"/><path d="M8 23h8"/></svg>Pria</span></label></div>
+                                </div>
+                            </div>
+                            <div id="ls-hijab-option-container" class="custom-radio space-y-2">
+                                <p class="font-semibold text-slate-700 text-sm">Opsi Pakaian:</p>
+                                <div class="flex gap-3">
+                                    <div class="flex-1"><input type="radio" name="ls-hijabOption" value="no" id="ls-hijab-no" checked><label for="ls-hijab-no"><span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Tidak Berhijab</span></label></div>
+                                    <div class="flex-1"><input type="radio" name="ls-hijabOption" value="yes" id="ls-hijab-yes"><label for="ls-hijab-yes"><span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8.5 2 6 4.5 6 8c0 1.5.5 3 1.5 4L12 22l4.5-10c1-1 1.5-2.5 1.5-4 0-3.5-2.5-6-6-6z"/><circle cx="12" cy="8" r="2"/></svg>Berhijab</span></label></div>
+                                </div>
+                            </div>
+                        </div>
+
+                         <div class="relative flex py-2 items-center">
+                            <div class="flex-grow border-t border-slate-300"></div><span class="flex-shrink mx-4 text-slate-400 text-sm font-semibold">ATAU</span><div class="flex-grow border-t border-slate-300"></div>
+                        </div>
+
+                        <div class="custom-radio">
+                             <input type="radio" name="ls-modelSelection" value="upload" id="ls-select-upload-model">
+                             <label for="ls-select-upload-model" class="!border-slate-300 !text-slate-500">
+                                 <span class="flex items-center gap-2">
+                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                                     <span class="font-bold">Unggah Model Sendiri</span>
+                                 </span>
+                             </label>
+                        </div>
+                        <div id="ls-upload-model-section" class="hidden">
+                             <label for="ls-model-image-upload" class="cursor-pointer group block w-full border-2 border-dashed border-slate-300 hover:border-slate-500 transition-colors rounded-lg p-4">
+                                 <div id="ls-model-upload-prompt" class="flex items-center gap-4 text-slate-500">
+                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                     <span class="font-medium text-sm">Pilih foto model referensi</span>
+                                 </div>
+                                  <div id="ls-model-image-preview-container" class="hidden text-center space-y-2">
+                                     <img id="ls-model-image-preview" src="#" alt="Pratinjau Model" class="max-h-24 mx-auto rounded-lg shadow-md">
+                                     <p class="text-blue-600 font-semibold text-sm">✓ Model diunggah!</p>
+                                 </div>
+                             </label>
+                            <input id="ls-model-image-upload" type="file" accept="image/png, image/jpeg, image/webp" class="hidden">
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6 h-full">
+                         <h3 class="text-xl font-bold text-center text-slate-800">Gaya Pemotretan</h3>
+                        <div class="space-y-2">
+                            <h4 class="font-semibold text-slate-700 text-sm">Jenis Potret</h4>
+                            <div class="custom-radio grid grid-cols-2 gap-3">
+                                <div><input type="radio" name="ls-shotType" value="full-body" id="ls-shot-full" checked><label for="ls-shot-full"><span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>Full Body</span></label></div>
+                                <div><input type="radio" name="ls-shotType" value="close-up" id="ls-shot-close"><label for="ls-shot-close"><span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Close-Up</span></label></div>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <h4 class="font-semibold text-slate-700 text-sm">Tema Visual</h4>
+                            <div>
+                                <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Profesional</h5>
+                                <div class="custom-radio grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    <div><input type="radio" name="ls-theme" value="clean studio photography, soft light" id="ls-theme-studio" checked><label for="ls-theme-studio" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>Studio</span></label></div>
+                                    <div><input type="radio" name="ls-theme" value="minimalist, solid bright color background" id="ls-theme-minimalist"><label for="ls-theme-minimalist" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>Minimalis</span></label></div>
+                                    <div><input type="radio" name="ls-theme" value="corporate setting, modern office background" id="ls-theme-corporate"><label for="ls-theme-corporate" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>Korporat</span></label></div>
+                                    <div><input type="radio" name="ls-theme" value="tech startup office, collaborative space, natural light" id="ls-theme-tech-startup"><label for="ls-theme-tech-startup" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.09 16.5c.34.52.57 1.14.66 1.82.1.68.06 1.32-.12 1.94-.18.62-.5 1.18-.94 1.62-.44.44-1 .76-1.62.94-.62.18-1.26.22-1.94.12-.68-.1-1.3-.32-1.82-.66C8.4 22.04 2 15.63 2 9.5 2 5.36 5.36 2 9.5 2s7.5 3.36 7.5 7.5c0 3.38-2.04 6.23-4.91 7z"/><path d="M12 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/><path d="M18.84 12.02c.36.03.7.17.98.42.53.48.81 1.17.81 1.9 0 1.29-1.01 2.52-2.3 2.66-.41-1.37-.2-2.84.59-4.11.33-.53.73-.99 1.17-1.39.1-.09.21-.17.32-.24.08-.05.16-.09.23-.14z"/></svg>Tech Startup</span></label></div>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Artistik</h5>
+                                <div class="custom-radio grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    <div><input type="radio" name="ls-theme" value="cinematic, dramatic lighting, film grain" id="ls-theme-cinematic"><label for="ls-theme-cinematic" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="2" height="20" x="2" y="2" rx="1"/><rect width="2" height="20" x="20" y="2" rx="1"/><rect width="13" height="16" x="6" y="4" rx="2"/></svg>Cinematic</span></label></div>
+                                    <div><input type="radio" name="ls-theme" value="vintage, retro filter, 90s fashion style" id="ls-theme-vintage"><label for="ls-theme-vintage" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>Vintage</span></label></div>
+                                    <div><input type="radio" name="ls-theme" value="enchanted forest, magical glowing elements, fantasy style" id="ls-theme-fantasy"><label for="ls-theme-fantasy" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 22v-4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M22 12h-4"/><path d="m4.93 19.07 2.83-2.83"/><path d="m16.24 7.76 2.83-2.83"/></svg>Fantasi</span></label></div>
+                                    <div><input type="radio" name="ls-theme" value="cyberpunk city, neon lights, futuristic" id="ls-theme-cyberpunk"><label for="ls-theme-cyberpunk" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>Cyberpunk</span></label></div>
+                                    <div><input type="radio" name="ls-theme" value="soft watercolor painting style, dreamy" id="ls-theme-watercolor"><label for="ls-theme-watercolor" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.94 2.94a2 2 0 0 0-2.88 0L2.94 10.06a2 2 0 0 0 0 2.88l5.23 5.23c.38.38.88.64 1.42.75.9.18 1.84-.2 2.47-.83l6.21-6.21a2 2 0 0 0 0-2.88l-5.23-5.23z"/><path d="M12 12h.01"/><path d="m21.12 12.12-5.23-5.23"/></svg>Watercolor</span></label></div>
+                                    <div><input type="radio" name="ls-theme" value="bold pop art style, vibrant colors, halftone dots" id="ls-theme-pop-art"><label for="ls-theme-pop-art" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Pop Art</span></label></div>
+                                    <div><input type="radio" name="ls-theme" value="dark moody scene with neon noir lighting" id="ls-theme-neon-noir"><label for="ls-theme-neon-noir" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Neon Noir</span></label></div>
+                                </div>
+                            </div>
+                             <div>
+                                <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Alam & Outdoor</h5>
+                                <div class="custom-radio grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                     <div><input type="radio" name="ls-theme" value="outdoor, natural sunlight, urban street style" id="ls-theme-outdoor"><label for="ls-theme-outdoor" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>Outdoor</span></label></div>
+                                     <div><input type="radio" name="ls-theme" value="tropical beach, clear blue water, sunny day" id="ls-theme-beach"><label for="ls-theme-beach" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12a5 5 0 0 1-5-5c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.76-2.24 5-5 5z"/><path d="M12 12v9"/><path d="M17.5 17.5c-2.5-2.5-7.5-2.5-10 0"/></svg>Pantai</span></label></div>
+                                     <div><input type="radio" name="ls-theme" value="snowy mountain peak, winter landscape" id="ls-theme-snow"><label for="ls-theme-snow" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>Salju</span></label></div>
+                                     <div><input type="radio" name="ls-theme" value="lush tropical jungle, dappled sunlight" id="ls-theme-jungle"><label for="ls-theme-jungle" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22c1.25-.91 2.3-2.04 3.2-3.37C6.8 16.2 8.35 14 12 14c.85 0 1.67.23 2.41.65.98.53 2.11 1.16 3.42 1.16 2.5 0 4.17-1.67 4.17-4.17s-1.67-4.17-4.17-4.17A4.15 4.15 0 0 0 14 9.17c0 2.22 1.21 3.33 2.5 4.17.54.35 1.18.66 1.91.8.8.15 1.59-.12 2.09-.62"/></svg>Hutan Tropis</span></label></div>
+                                     <div><input type="radio" name="ls-theme" value="vast desert landscape, golden hour" id="ls-theme-desert"><label for="ls-theme-desert" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 9.5c-2-.5-3-2-3-4C7 4 8 3 9 3s2 1 2 2.5c0 1.5-1 3-3 3.5m-3.5 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/><path d="M14 12.5c-2-.5-3-2-3-4C11 7 12 6 13 6s2 1 2 2.5c0 1.5-1 3-3 3.5m-3.5 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/><path d="M8.5 21a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg>Gurun</span></label></div>
+                                     <div><input type="radio" name="ls-theme" value="beautiful flower garden, colorful blossoms" id="ls-theme-garden"><label for="ls-theme-garden" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 0 0-10 10c0 4.4 3.6 8 8 8h4c4.4 0 8-3.6 8-8a10 10 0 0 0-10-10z"/></svg>Taman Bunga</span></label></div>
+                                </div>
+                            </div>
+                            <div>
+                                <h5 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Gaya Hidup</h5>
+                                <div class="custom-radio grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                     <div><input type="radio" name="ls-theme" value="cozy living room, warm interior lighting" id="ls-theme-home"><label for="ls-theme-home" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Rumah</span></label></div>
+                                     <div><input type="radio" name="ls-theme" value="modern minimalist cafe, coffee shop ambiance" id="ls-theme-cafe"><label for="ls-theme-cafe" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h2a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><path d="M3 8h14v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>Kafe</span></label></div>
+                                     <div><input type="radio" name="ls-theme" value="urban city street at night, bokeh lights" id="ls-theme-urban-night"><label for="ls-theme-urban-night" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-4.2 0-8 3.22-8 8.18 0 4.15 2.84 8.28 8 12.82 5.16-4.54 8-8.67 8-12.82C20 6.22 16.2 3 12 3z"/><circle cx="12" cy="10" r="3"/></svg>Kota Malam</span></label></div>
+                                     <div><input type="radio" name="ls-theme" value="modern kitchen, cooking scene" id="ls-theme-kitchen"><label for="ls-theme-kitchen" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v2H3z"/><path d="M5 21h2v-8H5v8zm8-14c-1.66 0-3 1.34-3 3v9h6v-9c0-1.66-1.34-3-3-3z"/></svg>Dapur</span></label></div>
+                                     <div><input type="radio" name="ls-theme" value="picnic in a park, sunny day, checkered blanket" id="ls-theme-picnic"><label for="ls-theme-picnic" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5"/><path d="M4 11v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V11"/><path d="M10 11V4"/><path d="M14 11V4"/><path d="M10 4a2 2 0 0 1-2-2h8a2 2 0 0 1-2 2z"/></svg>Piknik</span></label></div>
+                                     <div><input type="radio" name="ls-theme" value="modern gym, fitness equipment in background" id="ls-theme-gym"><label for="ls-theme-gym" class="!px-2 !py-2 text-sm"><span class="flex items-center justify-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9z"/><path d="M17.5 6.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9z"/><path d="M11 6h2v12h-2z"/></svg>Gym</span></label></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <h4 class="font-semibold text-slate-700 text-sm">Rasio Aspek</h4>
+                            <div class="custom-radio grid grid-cols-3 gap-3">
+                                <div><input type="radio" name="ls-aspectRatio" value="9:16" id="ls-ratio-portrait" checked><label for="ls-ratio-portrait" class="!px-2 !py-2 text-sm">Potret (9:16)</label></div>
+                                <div><input type="radio" name="ls-aspectRatio" value="1:1" id="ls-ratio-square"><label for="ls-ratio-square" class="!px-2 !py-2 text-sm">Persegi (1:1)</label></div>
+                                <div><input type="radio" name="ls-aspectRatio" value="16:9" id="ls-ratio-landscape"><label for="ls-ratio-landscape" class="!px-2 !py-2 text-sm">Lanskap (16:9)</label></div>
+                            </div>
+                        </div>
+                         <div class="space-y-2">
+                            <h4 class="font-semibold text-slate-700 text-sm">Gaya Kustom (Opsional)</h4>
+                            <textarea id="ls-custom-prompt" class="w-full bg-white border border-slate-300 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" rows="3" placeholder="Contoh: Gaya vaporwave, palet warna pastel, nuansa mimpi di pantai saat senja"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-between items-center pt-4">
+                    <button id="ls-back-to-step-1" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-8 rounded-lg transition-colors duration-300">Kembali</button>
+                    <button id="ls-generate-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50">
+                        Buat 4 Foto & Skrip
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Generation Result -->
+            <div id="ls-step-3" class="hidden text-center space-y-8">
+                <div id="ls-loading-state">
+                    <div class="flex flex-col items-center justify-center p-8 space-y-4">
+                        <div class="spinner w-16 h-16 border-4 border-t-blue-500 border-slate-200 rounded-full"></div>
+                        <div class="prose">
+                            <h2 class="text-3xl font-extrabold tracking-tight text-slate-800">AI sedang menyiapkan studio...</h2>
+                        <p class="text-slate-600">Mohon tunggu, AI sedang membuat gambar dan merangkai kata-kata... <span id="ls-generation-progress" class="font-bold">0/4</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ls-result-state" class="hidden space-y-8">
+                    <div class="prose">
+                        <h2 class="text-3xl font-extrabold tracking-tight text-slate-800">✨ Foto & Skrip Selesai! ✨</h2>
+                        <p class="text-slate-600">Berikut adalah hasil foto dengan pose CTA beserta skrip lipsync yang menjual.</p>
+                    </div>
+                    <div id="ls-result-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-6"></div>
+                    
+                    <div class="mt-8 pt-8 border-t border-slate-200 flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="https://grok.com/imagine" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/50 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.45 4.75L6.34 6.34 4.75 12 3 10.55 1.5 16.25 7.21 15l-1.45 4.75L12 18l4.75 1.45L15 16.25 22.5 15l-1.45-4.75-1.59 1.59-4.21-1.45L12 3z"/></svg>
+                            <span>Buat Video Unlimited 1</span>
+                        </a>
+                        <a href="https://www.meta.ai/" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/50 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-4.44a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8.88a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-4.44z"/><path d="M18 12.5a4.5 4.5 0 0 1-4.5 4.5v0a4.5 4.5 0 0 1-4.5-4.5v-2a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v2z"/><path d="M12 10.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+                            <span>Buat Video Unlimited 2</span>
+                        </a>
+                    </div>
+
+                     <button id="ls-start-over-button" class="bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 mt-8 shadow-lg shadow-slate-500/30 hover:shadow-xl hover:shadow-slate-500/50">
+                        Mulai Sesi Baru
+                    </button>
+                </div>
+                 <div id="ls-error-state" class="hidden p-6 bg-red-50 border border-red-300 rounded-lg text-left">
+                    <h3 class="text-xl font-bold text-red-700">Oops, terjadi kesalahan!</h3>
+                    <p id="ls-error-message" class="text-red-600 mt-2"></p>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Main Content for Advertisement -->
+        <main id="advertisement-content" class="p-6 sm:p-8 lg:p-10 w-full overflow-y-auto hidden">
+            <div class="prose mb-8">
+                <h2 class="text-3xl font-extrabold tracking-tight text-slate-800">Langkah 1: Unggah Foto Produk Anda</h2>
+                <p class="text-slate-600">Pilih gambar produk yang ingin Anda buatkan iklan. Pastikan gambar jelas dan memiliki pencahayaan yang baik untuk hasil terbaik.</p>
+            </div>
+            <!-- Step 1: Upload Product Image for Advertisement -->
+            <div id="ad-step-1" class="space-y-8">
+                <label for="ad-product-image-upload" class="cursor-pointer group block w-full border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50 transition-colors rounded-xl p-8 text-center">
+                    <div id="ad-product-upload-prompt" class="flex flex-col items-center space-y-4 text-slate-500 group-hover:text-blue-600 transition-colors">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <span class="font-semibold text-lg">Klik untuk memilih foto produk</span>
+                        <span class="text-sm">Format yang didukung: PNG, JPG, WEBP</span>
+                    </div>
+                     <div id="ad-product-image-preview-container" class="hidden text-center space-y-4">
+                        <img id="ad-product-image-preview" src="#" alt="Pratinjau Produk" class="max-h-52 mx-auto rounded-lg shadow-lg">
+                        <p class="text-blue-600 font-semibold flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                            Foto produk berhasil diunggah!
+                        </p>
+                    </div>
+                </label>
+                <input id="ad-product-image-upload" type="file" accept="image/png, image/jpeg, image/webp" class="hidden">
+                 <div class="text-right">
+                    <button id="ad-next-to-step-2" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 disabled:bg-slate-400 disabled:cursor-not-allowed disabled:shadow-none shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50" disabled>
+                        Lanjutkan
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Step 2: Choose Advertisement Style -->
+            <div id="ad-step-2" class="hidden space-y-8">
+                <div class="prose">
+                    <h2 class="text-3xl font-extrabold tracking-tight text-slate-800">Langkah 2: Pilih Gaya Iklan</h2>
+                     <p class="text-slate-600">Tentukan gaya dan tema iklan yang ingin Anda buat untuk produk Anda.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+                     <h3 class="text-xl font-bold text-center text-slate-800">Gaya Iklan</h3>
+                     <div class="space-y-2">
+                        <h4 class="font-semibold text-slate-700 text-sm">Jenis Iklan</h4>
+                        <div class="custom-radio grid grid-cols-2 gap-3">
+                            <div><input type="radio" name="adType" value="lifestyle" id="ad-lifestyle" checked><label for="ad-lifestyle"><span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Lifestyle</span></label></div>
+                            <div><input type="radio" name="adType" value="product-focus" id="ad-product"><label for="ad-product"><span class="flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>Product Focus</span></label></div>
+                        </div>
+                    </div>
+                     <div class="space-y-4">
+                        <h4 class="font-semibold text-slate-700 text-sm">Vibe</h4>
+                        <div class="custom-radio grid grid-cols-5 gap-2">
+                            <div><input type="radio" name="adVibe" value="energetic" id="ad-vibe-energetic"><label for="ad-vibe-energetic" class="!px-3 !py-3 text-xs bg-gray-100 hover:bg-orange-100 border hover:border-orange-300"><span class="flex flex-col items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#FFD700" stroke="#FFA500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Energetic & Fun</span></label></div>
+                            <div><input type="radio" name="adVibe" value="cinematic" id="ad-vibe-cinematic" checked><label for="ad-vibe-cinematic" class="!px-3 !py-3 text-xs bg-orange-500 text-white hover:bg-orange-600"><span class="flex flex-col items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#DC143C" stroke="#B22222" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="2" height="20" x="2" y="2" rx="1"/><rect width="2" height="20" x="20" y="2" rx="1"/><rect width="13" height="16" x="6" y="4" rx="2"/></svg>Cinematic & Epic</span></label></div>
+                            <div><input type="radio" name="adVibe" value="modern" id="ad-vibe-modern"><label for="ad-vibe-modern" class="!px-3 !py-3 text-xs bg-gray-100 hover:bg-orange-100 border hover:border-orange-300"><span class="flex flex-col items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#E6E6FA" stroke="#4169E1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>Modern & Clean</span></label></div>
+                            <div><input type="radio" name="adVibe" value="natural" id="ad-vibe-natural"><label for="ad-vibe-natural" class="!px-3 !py-3 text-xs bg-gray-100 hover:bg-orange-100 border hover:border-orange-300"><span class="flex flex-col items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#90EE90" stroke="#228B22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3c0 1.5 1.5 3 3 3s3-1.5 3-3a3 3 0 0 0-3-3Z"/><path d="M19 14c0-3.5-2.5-6-6-6h-2c-3.5 0-6 2.5-6 6v8h14v-8Z"/></svg>Natural & Organic</span></label></div>
+                            <div><input type="radio" name="adVibe" value="tech" id="ad-vibe-tech"><label for="ad-vibe-tech" class="!px-3 !py-3 text-xs bg-gray-100 hover:bg-orange-100 border hover:border-orange-300"><span class="flex flex-col items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#87CEEB" stroke="#00CED1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>Tech & Futuristic</span></label></div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-slate-700 text-sm">Pencahayaan</h4>
+                        <div class="custom-radio grid grid-cols-4 gap-2">
+                            <div><input type="radio" name="adLighting" value="studio" id="ad-light-studio"><label for="ad-light-studio" class="!px-3 !py-3 text-xs bg-gray-100 hover:bg-orange-100 border hover:border-orange-300"><span class="flex flex-col items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#F0F8FF" stroke="#4682B4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>Studio Light</span></label></div>
+                            <div><input type="radio" name="adLighting" value="dramatic" id="ad-light-dramatic" checked><label for="ad-light-dramatic" class="!px-3 !py-3 text-xs bg-orange-500 text-white hover:bg-orange-600"><span class="flex flex-col items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#8B0000" stroke="#FF4500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>Dramatic</span></label></div>
+                            <div><input type="radio" name="adLighting" value="natural" id="ad-light-natural"><label for="ad-light-natural" class="!px-3 !py-3 text-xs bg-gray-100 hover:bg-orange-100 border hover:border-orange-300"><span class="flex flex-col items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#FFFF99" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>Natural Light</span></label></div>
+                            <div><input type="radio" name="adLighting" value="neon" id="ad-light-neon"><label for="ad-light-neon" class="!px-3 !py-3 text-xs bg-gray-100 hover:bg-orange-100 border hover:border-orange-300"><span class="flex flex-col items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#FF1493" stroke="#00FFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>Neon</span></label></div>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <h4 class="font-semibold text-slate-700 text-sm">Rasio Aspek</h4>
+                        <div class="custom-radio grid grid-cols-3 gap-3">
+                            <div><input type="radio" name="adAspectRatio" value="9:16" id="ad-ratio-portrait" checked><label for="ad-ratio-portrait" class="!px-2 !py-2 text-sm">Potret (9:16)</label></div>
+                            <div><input type="radio" name="adAspectRatio" value="1:1" id="ad-ratio-square"><label for="ad-ratio-square" class="!px-2 !py-2 text-sm">Persegi (1:1)</label></div>
+                            <div><input type="radio" name="adAspectRatio" value="16:9" id="ad-ratio-landscape"><label for="ad-ratio-landscape" class="!px-2 !py-2 text-sm">Lanskap (16:9)</label></div>
+                        </div>
+                    </div>
+                     <div class="space-y-2">
+                        <h4 class="font-semibold text-slate-700 text-sm">Deskripsi Iklan Kustom (Opsional)</h4>
+                        <textarea id="ad-custom-prompt" class="w-full bg-white border border-slate-300 rounded-lg p-3 text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" rows="3" placeholder="Contoh: Iklan untuk target audience muda, dengan nuansa fun dan playful, background urban street"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-between items-center pt-4">
+                    <button id="ad-back-to-step-1" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-3 px-8 rounded-lg transition-colors duration-300">Kembali</button>
+                    <button id="ad-generate-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50">
+                        Buat 6 Iklan Produk
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Advertisement Generation Result -->
+            <div id="ad-step-3" class="hidden text-center space-y-8">
+                <div id="ad-loading-state">
+                    <div class="flex flex-col items-center justify-center p-8 space-y-4">
+                        <div class="spinner w-16 h-16 border-4 border-t-blue-500 border-slate-200 rounded-full"></div>
+                        <div class="prose">
+                            <h2 class="text-3xl font-extrabold tracking-tight text-slate-800">AI sedang membuat iklan...</h2>
+                        <p class="text-slate-600">Mohon tunggu sejenak, kami sedang menciptakan iklan yang menarik untuk produk Anda. <span id="ad-generation-progress" class="font-bold">0/6</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ad-result-state" class="hidden space-y-8">
+                    <div class="prose">
+                        <h2 class="text-3xl font-extrabold tracking-tight text-slate-800">✨ Iklan Selesai! ✨</h2>
+                        <p class="text-slate-600">Berikut adalah hasil iklan produk Anda. Klik 'Lihat' untuk pratinjau atau 'Unduh' untuk menyimpan.</p>
+                    </div>
+                    <div id="ad-result-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                    
+                    <div id="ad-caption-section" class="hidden pt-8 border-t border-slate-200">
+                        <div class="prose mb-6">
+                            <h3 class="text-2xl font-bold tracking-tight text-slate-800">Butuh Copy Iklan?</h3>
+                            <p class="text-slate-600">Biarkan AI membantu Anda menulis copy iklan yang menarik untuk produk ini.</p>
+                        </div>
+                        <button id="ad-generate-captions-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/50">
+                            Buat Copy Iklan Otomatis
+                        </button>
+                        <div id="ad-captions-container" class="mt-6 hidden text-left space-y-4 max-w-2xl mx-auto"></div>
+                    </div>
+
+                     <div class="mt-8 pt-8 border-t border-slate-200 flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="https://grok.com/imagine" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/50 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.45 4.75L6.34 6.34 4.75 12 3 10.55 1.5 16.25 7.21 15l-1.45 4.75L12 18l4.75 1.45L15 16.25 22.5 15l-1.45-4.75-1.59 1.59-4.21-1.45L12 3z"/></svg>
+                            <span>Buat Video Unlimited 1</span>
+                        </a>
+                        <a href="https://www.meta.ai/" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/50 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-4.44a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h8.88a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-4.44z"/><path d="M18 12.5a4.5 4.5 0 0 1-4.5 4.5v0a4.5 4.5 0 0 1-4.5-4.5v-2a4.5 4.5 0 0 1 4.5-4.5v0a4.5 4.5 0 0 1 4.5 4.5v2z"/><path d="M12 10.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+                            <span>Buat Video Unlimited 2</span>
+                        </a>
+                    </div>
+                     <button id="ad-start-over-button" class="bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 mt-8 shadow-lg shadow-slate-500/30 hover:shadow-xl hover:shadow-slate-500/50">
+                        Mulai Sesi Baru
+                    </button>
+                </div>
+                 <div id="ad-error-state" class="hidden p-6 bg-red-50 border border-red-300 rounded-lg text-left">
+                    <h3 class="text-xl font-bold text-red-700">Oops, terjadi kesalahan!</h3>
+                    <p id="ad-error-message" class="text-red-600 mt-2"></p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Image Preview -->
+    <div id="image-modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4 transition-opacity duration-300">
+        <div class="relative bg-white p-2 rounded-lg shadow-xl max-w-4xl w-full max-h-full">
+            <button id="modal-close-button" class="absolute -top-4 -right-4 bg-white text-black rounded-full h-10 w-10 flex items-center justify-center text-2xl font-bold z-10 hover:bg-gray-200 transition-colors">&times;</button>
+            <img id="modal-image" src="" alt="Image Preview" class="w-full h-full object-contain max-h-[90vh] rounded">
+        </div>
+    </div>
+
+    <script type="module">
+        import { GoogleGenAI } from 'https://esm.run/@google/genai';
+
+        // --- State Management ---
+        const API_KEY = (typeof process !== 'undefined' && process.env && process.env.API_KEY)
+            ? process.env.API_KEY
+            : (typeof window !== 'undefined' && window.API_KEY ? window.API_KEY : '');
+            
+        // Photoshoot State
+        let productImageBase64 = null, modelImageBase64 = null, lastThemeDescription = '', generationMode = 'ai';
+        // Lipsync State
+        let lsProductImageBase64 = null, lsModelImageBase64 = null, lsLastThemeDescription = '', lsGenerationMode = 'ai';
+        let lsProductDescription = '';
+        // Advertisement state
+        let adProductImageBase64 = null, adLastThemeDescription = '';
+        
+        let currentFeature = 'photoshoot'; // 'photoshoot', 'lipsync', or 'advertisement'
+        
+        // --- Gemini AI Client ---
+        let ai = null;
+        if (API_KEY) {
+             ai = new GoogleGenAI({ apiKey: API_KEY });
+        } else {
+            console.warn("API_KEY not found. Video generation will be disabled.");
+        }
+
+        // --- DOM Element Selection ---
+        // Navigation
+        const navPhotoshoot = document.getElementById('nav-photoshoot'), navLipsync = document.getElementById('nav-lipsync'), navAdvertisement = document.getElementById('nav-advertisement');
+        const photoshootContent = document.getElementById('photoshoot-content'), lipsyncContent = document.getElementById('lipsync-content'), advertisementContent = document.getElementById('advertisement-content');
+        const imageModal = document.getElementById('image-modal'), modalImage = document.getElementById('modal-image'), modalCloseButton = document.getElementById('modal-close-button');
+        
+        // Photoshoot DOM
+        const step1 = document.getElementById('step-1'), step2 = document.getElementById('step-2'), step3 = document.getElementById('step-3');
+        const productImageUpload = document.getElementById('product-image-upload'), productUploadPrompt = document.getElementById('product-upload-prompt'), productImagePreviewContainer = document.getElementById('product-image-preview-container'), productImagePreview = document.getElementById('product-image-preview'), nextToStep2Button = document.getElementById('next-to-step-2');
+        const modelImageUpload = document.getElementById('model-image-upload'), modelUploadPrompt = document.getElementById('model-upload-prompt'), modelImagePreviewContainer = document.getElementById('model-image-preview-container'), modelImagePreview = document.getElementById('model-image-preview');
+        const backToStep1Button = document.getElementById('back-to-step-1'), generateButton = document.getElementById('generate-button'), customPromptInput = document.getElementById('custom-prompt');
+        const genderWomanRadio = document.getElementById('gender-woman'), genderManRadio = document.getElementById('gender-man'), hijabOptionContainer = document.getElementById('hijab-option-container');
+        const selectAiModelRadio = document.getElementById('select-ai-model'), selectUploadModelRadio = document.getElementById('select-upload-model');
+        const aiModelOptions = document.getElementById('ai-model-options'), uploadModelSection = document.getElementById('upload-model-section');
+        const loadingState = document.getElementById('loading-state'), resultState = document.getElementById('result-state'), errorState = document.getElementById('error-state'), errorMessage = document.getElementById('error-message'), resultGrid = document.getElementById('result-grid'), startOverButton = document.getElementById('start-over-button'), generationProgress = document.getElementById('generation-progress');
+        const captionSection = document.getElementById('caption-section'), generateCaptionsButton = document.getElementById('generate-captions-button'), captionsContainer = document.getElementById('captions-container');
+
+        // Lipsync DOM
+        const lsStep1 = document.getElementById('ls-step-1'), lsStep2 = document.getElementById('ls-step-2'), lsStep3 = document.getElementById('ls-step-3');
+        const lsProductImageUpload = document.getElementById('ls-product-image-upload'), lsProductUploadPrompt = document.getElementById('ls-product-upload-prompt'), lsProductImagePreviewContainer = document.getElementById('ls-product-image-preview-container'), lsProductImagePreview = document.getElementById('ls-product-image-preview'), lsNextToStep2Button = document.getElementById('ls-next-to-step-2');
+        const lsModelImageUpload = document.getElementById('ls-model-image-upload'), lsModelUploadPrompt = document.getElementById('ls-model-upload-prompt'), lsModelImagePreviewContainer = document.getElementById('ls-model-image-preview-container'), lsModelImagePreview = document.getElementById('ls-model-image-preview');
+        const lsBackToStep1Button = document.getElementById('ls-back-to-step-1'), lsGenerateButton = document.getElementById('ls-generate-button'), lsCustomPromptInput = document.getElementById('ls-custom-prompt');
+        const lsProductDescriptionInput = document.getElementById('ls-product-description');
+        const lsGenderWomanRadio = document.getElementById('ls-gender-woman'), lsGenderManRadio = document.getElementById('ls-gender-man'), lsHijabOptionContainer = document.getElementById('ls-hijab-option-container');
+        const lsSelectAiModelRadio = document.getElementById('ls-select-ai-model'), lsSelectUploadModelRadio = document.getElementById('ls-select-upload-model');
+        const lsAiModelOptions = document.getElementById('ls-ai-model-options'), lsUploadModelSection = document.getElementById('ls-upload-model-section');
+        const lsLoadingState = document.getElementById('ls-loading-state'), lsResultState = document.getElementById('ls-result-state'), lsErrorState = document.getElementById('ls-error-state'), lsErrorMessage = document.getElementById('ls-error-message'), lsResultGrid = document.getElementById('ls-result-grid'), lsStartOverButton = document.getElementById('ls-start-over-button'), lsGenerationProgress = document.getElementById('ls-generation-progress');
+        
+        // Advertisement DOM
+        const adStep1 = document.getElementById('ad-step-1'), adStep2 = document.getElementById('ad-step-2'), adStep3 = document.getElementById('ad-step-3');
+        const adProductImageUpload = document.getElementById('ad-product-image-upload'), adProductUploadPrompt = document.getElementById('ad-product-upload-prompt'), adProductImagePreviewContainer = document.getElementById('ad-product-image-preview-container'), adProductImagePreview = document.getElementById('ad-product-image-preview'), adNextToStep2Button = document.getElementById('ad-next-to-step-2');
+        const adBackToStep1Button = document.getElementById('ad-back-to-step-1'), adGenerateButton = document.getElementById('ad-generate-button'), adCustomPromptInput = document.getElementById('ad-custom-prompt');
+        const adLoadingState = document.getElementById('ad-loading-state'), adResultState = document.getElementById('ad-result-state'), adErrorState = document.getElementById('ad-error-state'), adErrorMessage = document.getElementById('ad-error-message'), adResultGrid = document.getElementById('ad-result-grid'), adStartOverButton = document.getElementById('ad-start-over-button'), adGenerationProgress = document.getElementById('ad-generation-progress');
+        const adCaptionSection = document.getElementById('ad-caption-section'), adGenerateCaptionsButton = document.getElementById('ad-generate-captions-button'), adCaptionsContainer = document.getElementById('ad-captions-container');
+
+
+        // --- Helper Functions ---
+        const fileToBase64 = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = error => reject(error);
+        });
+
+        const goToStep = (stepNumber) => {
+            [step1, step2, step3, errorState].forEach(el => el.classList.add('hidden'));
+            if (stepNumber === 1) step1.classList.remove('hidden');
+            else if (stepNumber === 2) step2.classList.remove('hidden');
+            else if (stepNumber === 3) {
+                step3.classList.remove('hidden');
+                loadingState.classList.remove('hidden');
+                resultState.classList.add('hidden');
+                captionSection.classList.add('hidden');
+            }
+        };
+
+        const goToLipsyncStep = (stepNumber) => {
+            [lsStep1, lsStep2, lsStep3, lsErrorState].forEach(el => el.classList.add('hidden'));
+            if (stepNumber === 1) lsStep1.classList.remove('hidden');
+            else if (stepNumber === 2) lsStep2.classList.remove('hidden');
+            else if (stepNumber === 3) {
+                lsStep3.classList.remove('hidden');
+                lsLoadingState.classList.remove('hidden');
+                lsResultState.classList.add('hidden');
+            }
+        };
+        
+        const goToAdStep = (stepNumber) => {
+            [adStep1, adStep2, adStep3, adErrorState].forEach(el => el.classList.add('hidden'));
+            if (stepNumber === 1) adStep1.classList.remove('hidden');
+            else if (stepNumber === 2) adStep2.classList.remove('hidden');
+            else if (stepNumber === 3) {
+                adStep3.classList.remove('hidden');
+                adLoadingState.classList.remove('hidden');
+                adResultState.classList.add('hidden');
+            }
+        };
+
+        const processImageToRatio = (base64, ratioString) => {
+            return new Promise((resolve, reject) => {
+                const [ratioW, ratioH] = ratioString.split(':').map(Number);
+                if (!ratioW || !ratioH) return reject(new Error("Invalid ratio string"));
+                const targetRatio = ratioW / ratioH;
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    let srcX = 0, srcY = 0, srcWidth = img.width, srcHeight = img.height;
+                    const originalRatio = img.width / img.height;
+
+                    if (originalRatio > targetRatio) {
+                        srcWidth = img.height * targetRatio;
+                        srcX = (img.width - srcWidth) / 2;
+                    } else if (originalRatio < targetRatio) {
+                        srcHeight = img.width / targetRatio;
+                        srcY = (img.height - srcHeight) / 2;
+                    }
+                    
+                    const outputWidth = Math.min(1024, srcWidth);
+                    const outputHeight = outputWidth / targetRatio;
+                    canvas.width = outputWidth;
+                    canvas.height = outputHeight;
+                    ctx.drawImage(img, srcX, srcY, srcWidth, srcHeight, 0, 0, outputWidth, outputHeight);
+                    resolve(canvas.toDataURL('image/jpeg', 0.9).split(',')[1]);
+                };
+                img.onerror = (err) => reject(new Error("Gagal memuat gambar untuk diproses."));
+                img.src = `data:image/jpeg;base64,${base64}`;
+            });
+        };
+        
+        const switchFeature = (feature) => {
+            currentFeature = feature;
+            photoshootContent.style.display = 'none';
+            lipsyncContent.style.display = 'none';
+            advertisementContent.style.display = 'none';
+            navPhotoshoot.classList.remove('active');
+            navLipsync.classList.remove('active');
+            navAdvertisement.classList.remove('active');
+
+            if (feature === 'photoshoot') {
+                photoshootContent.style.display = 'block';
+                navPhotoshoot.classList.add('active');
+            } else if (feature === 'lipsync') {
+                lipsyncContent.style.display = 'block';
+                navLipsync.classList.add('active');
+            } else {
+                advertisementContent.style.display = 'block';
+                navAdvertisement.classList.add('active');
+            }
+        };
+        
+        // --- API Call Logic ---
+        const callImageAPI = async (prompt, productImgBase64, modelImgBase64 = null) => {
+             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${API_KEY}`;
+             const parts = [{ text: prompt }, { inlineData: { mimeType: "image/jpeg", data: productImgBase64 } }];
+             if(modelImgBase64) parts.push({ inlineData: { mimeType: "image/jpeg", data: modelImgBase64 } });
+
+             const payload = {
+                 contents: [{ parts }],
+                 generationConfig: { responseModalities: ['IMAGE'] },
+             };
+
+             const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+             if (!response.ok) { const errorBody = await response.json(); throw new Error(errorBody.error?.message || response.statusText); }
+             const result = await response.json();
+             const candidate = result?.candidates?.[0];
+             const base64Data = candidate?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+             if (base64Data) return base64Data;
+             const textResponse = candidate?.content?.parts?.[0]?.text;
+             if (textResponse) throw new Error(textResponse);
+             throw new Error("Invalid API response structure.");
+        };
+
+        const callTextAPI = async (prompt, productImgBase64, schema) => {
+            const userPrompt = `${prompt}\n\nKembalikan JSON object dengan key: \"script\" (string) saja, tanpa teks lain.`;
+            const resp = await fetch('/api/chutesChat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'deepseek-ai/DeepSeek-V3.1',
+                    messages: [
+                        { role: 'system', content: 'Kembalikan JSON object dengan key: script (string). Jangan sertakan teks lain di luar JSON.' },
+                        { role: 'user', content: userPrompt }
+                    ],
+                    stream: false,
+                    max_tokens: 256,
+                    temperature: 0.7
+                })
+            });
+            if (!resp.ok) { let m = `HTTP ${resp.status}`; try { m = (await resp.json())?.error?.message || m; } catch {} throw new Error(m); }
+            const data = await resp.json();
+            const text = (data?.choices?.[0]?.message?.content || '').trim();
+            if (!text) throw new Error('Respons AI kosong');
+            const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/i, '');
+            return JSON.parse(cleaned);
+        };
+
+        const generateVideo = async (imageBase64, theme, buttonElement, videoContainerElement) => {
+            if (!ai) {
+                alert("Layanan pembuatan video tidak tersedia. Muat ulang halaman dan pastikan API Key sudah benar.");
+                return;
+            }
+
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = `<div class="flex items-center justify-center"><div class="spinner w-4 h-4 border-2 border-t-white border-white/30 rounded-full mr-2"></div><span>Membuat...</span></div>`;
+
+            try {
+                const videoPrompt = `Animate this image. Create a short, high-quality, 8-second video with this theme: "${theme}". The movement should be subtle and cinematic.`;
+                
+                let operation = await ai.models.generateVideos({
+                    model: 'veo-2.0-generate-001',
+                    prompt: videoPrompt,
+                    image: { imageBytes: imageBase64, mimeType: 'image/png' },
+                    config: { numberOfVideos: 1, durationSeconds: 8, aspectRatio: '9:16' }
+                });
+
+                while (!operation.done) {
+                    await new Promise(resolve => setTimeout(resolve, 10000));
+                    operation = await ai.operations.getVideosOperation({ operation: operation });
+                }
+
+                const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+                if (!downloadLink) throw new Error("URI Video tidak ditemukan dalam respons API.");
+
+                const response = await fetch(`${downloadLink}&key=${API_KEY}`);
+                if (!response.ok) throw new Error(`Gagal mengunduh video: ${response.statusText}`);
+                const videoBlob = await response.blob();
+                const videoUrl = URL.createObjectURL(videoBlob);
+
+                videoContainerElement.innerHTML = ''; 
+                const videoWrapper = document.createElement('div');
+                videoWrapper.className = 'mt-4';
+                
+                const videoElement = document.createElement('video');
+                videoElement.src = videoUrl;
+                videoElement.className = 'w-full h-auto rounded-lg border border-slate-200';
+                videoElement.controls = true;
+                videoElement.autoplay = true;
+                videoElement.loop = true;
+                videoElement.muted = true;
+                videoWrapper.appendChild(videoElement);
+                
+                const videoDownloadLink = document.createElement('a');
+                videoDownloadLink.href = videoUrl;
+                videoDownloadLink.download = `product_video.mp4`;
+                videoDownloadLink.textContent = 'Unduh Video';
+                videoDownloadLink.className = 'block w-full text-center bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-3 rounded-md text-sm transition-colors mt-2';
+                videoWrapper.appendChild(videoDownloadLink);
+
+                videoContainerElement.appendChild(videoWrapper);
+                videoContainerElement.classList.remove('hidden');
+
+                buttonElement.textContent = 'Video Siap';
+                buttonElement.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+                buttonElement.classList.add('bg-emerald-500', '!cursor-default');
+
+            } catch (error) {
+                console.error("Video generation failed:", error);
+                videoContainerElement.innerHTML = `<p class="text-red-600 text-sm mt-2 p-2 bg-red-50 rounded">Gagal membuat video: ${error.message}</p>`;
+                videoContainerElement.classList.remove('hidden');
+                
+                buttonElement.disabled = false;
+                buttonElement.textContent = 'Coba Lagi Video';
+                buttonElement.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+                buttonElement.classList.add('bg-red-600', 'hover:bg-red-700');
+            }
+        };
+
+        // --- Event Listeners (Photoshoot) ---
+        productImageUpload.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            productImagePreview.src = URL.createObjectURL(file);
+            productUploadPrompt.classList.add('hidden');
+            productImagePreviewContainer.classList.remove('hidden');
+            try {
+                productImageBase64 = await fileToBase64(file);
+                nextToStep2Button.disabled = false;
+            } catch (error) {
+                console.error("Error converting product image:", error);
+                alert("Gagal memproses gambar produk.");
+            }
+        });
+        
+        modelImageUpload.addEventListener('change', async (e) => {
+             const file = e.target.files[0];
+            if (!file) return;
+            modelImagePreview.src = URL.createObjectURL(file);
+            modelUploadPrompt.classList.add('hidden');
+            modelImagePreviewContainer.classList.remove('hidden');
+            try { modelImageBase64 = await fileToBase64(file); } catch (error) { console.error("Error converting model image:", error); alert("Gagal memproses gambar model."); }
+        });
+
+        selectAiModelRadio.addEventListener('change', () => {
+            if (selectAiModelRadio.checked) {
+                generationMode = 'ai';
+                aiModelOptions.classList.remove('hidden');
+                uploadModelSection.classList.add('hidden');
+                modelImageBase64 = null;
+                modelImageUpload.value = '';
+            }
+        });
+
+        selectUploadModelRadio.addEventListener('change', () => {
+            if (selectUploadModelRadio.checked) {
+                generationMode = 'upload';
+                aiModelOptions.classList.add('hidden');
+                uploadModelSection.classList.remove('hidden');
+            }
+        });
+        
+        genderWomanRadio.addEventListener('change', () => { if (genderWomanRadio.checked) hijabOptionContainer.classList.remove('hidden'); });
+        genderManRadio.addEventListener('change', () => { if (genderManRadio.checked) hijabOptionContainer.classList.add('hidden'); });
+        
+        nextToStep2Button.addEventListener('click', () => goToStep(2));
+        backToStep1Button.addEventListener('click', () => goToStep(1));
+
+        generateButton.addEventListener('click', async () => {
+            if (!productImageBase64) { alert("Harap unggah foto produk terlebih dahulu."); return; }
+            if (generationMode === 'upload' && !modelImageBase64) { alert("Anda memilih mode unggah, harap unggah foto model."); return; }
+
+            generateButton.disabled = true;
+            generateButton.innerHTML = `<div class="flex items-center justify-center"><div class="spinner w-5 h-5 border-2 border-t-white border-white/30 rounded-full mr-2"></div><span>Memproses...</span></div>`;
+            
+            let processedProductImageBase64;
+            const selectedRatio = document.querySelector('input[name="aspectRatio"]:checked').value;
+
+            try {
+                processedProductImageBase64 = await processImageToRatio(productImageBase64, selectedRatio);
+            } catch (error) {
+                console.error("Error processing product image:", error);
+                goToStep(1);
+                alert(`Gagal memproses rasio gambar: ${error.message}`);
+                generateButton.disabled = false;
+                generateButton.textContent = 'Buat 6 Foto Produk';
+                return;
+            }
+
+            goToStep(3);
+            resultGrid.innerHTML = '';
+            let generatedCount = 0;
+            const errorMessages = new Set();
+            generationProgress.textContent = `${generatedCount}/6`;
+
+            const customPromptText = customPromptInput.value.trim();
+            lastThemeDescription = customPromptText || document.querySelector('input[name="theme"]:checked').value;
+            const selectedShotType = document.querySelector('input[name="shotType"]:checked').value;
+            
+            let aiModelDescription = '';
+            if (generationMode === 'ai') {
+                const gender = document.querySelector('input[name="modelGender"]:checked').value;
+                const hijab = document.querySelector('input[name="hijabOption"]:checked').value;
+                if (gender === 'woman') {
+                    aiModelDescription = (hijab === 'yes') 
+                        ? 'a beautiful young Indonesian woman in her early 20s, wearing a modern and stylish light-grey hijab, with warm brown eyes and a friendly, gentle smile.'
+                        : 'a beautiful young Southeast Asian woman in her early 20s, with long, flowing dark brown hair, soft brown eyes, and a natural, radiant smile.';
+                } else {
+                    aiModelDescription = 'a handsome young Indonesian man in his mid-20s, with short, neat black hair, a friendly expression, and a confident but approachable look.';
+                }
+            }
+            
+            const fullBodyModifiers = ["dynamic full-body pose, standing", "walking towards camera, street style", "sitting elegantly on a minimalist stool", "candid laughing, lifestyle", "showing the product while looking away", "powerful stance, looking at camera"];
+            const closeUpModifiers = ["close-up on the product being used", "portrait from the chest up, smiling", "over-the-shoulder view of product", "candid expression, holding product near face", "beauty shot, clear details", "profile view, three-quarter portrait"];
+            const poseModifiers = selectedShotType === 'full-body' ? fullBodyModifiers : closeUpModifiers;
+            const selectedPoseModifiers = poseModifiers.slice(0, 6);
+
+            const generationPromises = selectedPoseModifiers.map(async (modifier) => {
+                let prompt;
+                if (generationMode === 'ai') {
+                    prompt = `Create a hyper-realistic, 8k resolution, professional product photograph. The overall style and theme MUST BE: "${lastThemeDescription}". The product is the item from the first image. The model MUST be consistently depicted as: "${aiModelDescription}". The model is naturally using/wearing the product. The specific shot is a ${modifier}. Ensure sharp focus and natural lighting. The final image must have a ${selectedRatio} aspect ratio.`;
+                } else {
+                     prompt = `Create a hyper-realistic, 8k resolution, professional product photograph. The overall style and theme MUST BE: "${lastThemeDescription}". The model is the person from the second image, and their face must be clear, in sharp focus, and not blurred. The product is the item from the first image. The model must be wearing/using the product naturally. The specific shot is a ${modifier}. The model's face and identity must be consistent. Ensure natural lighting. The final image must have a ${selectedRatio} aspect ratio.`;
+                }
+
+                try {
+                    const imageData = await callImageAPI(prompt, processedProductImageBase64, modelImageBase64);
+                    generatedCount++;
+                    generationProgress.textContent = `${generatedCount}/6`;
+                    return imageData;
+                } catch (error) {
+                    errorMessages.add(error.message);
+                    return null;
+                }
+            });
+
+            const results = await Promise.all(generationPromises);
+            
+            loadingState.classList.add('hidden');
+            const successfulResults = results.filter(r => r !== null);
+
+            if (successfulResults.length === 0) {
+                errorState.classList.remove('hidden');
+                errorMessage.innerHTML = `<strong>Maaf, sesi foto gagal.</strong><br>Pesan dari AI: "<em>${[...errorMessages][0] || "Unknown error."}</em>"`;
+            } else {
+                resultState.classList.remove('hidden');
+                captionSection.classList.remove('hidden');
+                successfulResults.forEach((base64Data, i) => {
+                    const poseCard = document.createElement('div');
+                    poseCard.className = 'bg-white rounded-xl overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 border border-slate-200 group';
+                    
+                    const img = document.createElement('img');
+                    img.src = `data:image/png;base64,${base64Data}`;
+                    img.alt = `Generated Pose ${i + 1}`;
+                    
+                    const ratioClass = { '9:16': 'aspect-[9/16]', '1:1': 'aspect-square', '16:9': 'aspect-video' }[selectedRatio] || 'aspect-[9/16]';
+                    img.className = `w-full h-auto object-cover ${ratioClass}`;
+
+                    const buttonContainer = document.createElement('div');
+                    buttonContainer.className = 'p-3 grid grid-cols-3 gap-2 bg-white';
+
+                    const viewButton = document.createElement('button');
+                    viewButton.textContent = 'Lihat';
+                    viewButton.className = 'w-full text-center bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-2 px-3 rounded-md text-sm transition-colors';
+                    viewButton.onclick = () => { modalImage.src = `data:image/png;base64,${base64Data}`; imageModal.classList.remove('hidden'); };
+
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = `data:image/png;base64,${base64Data}`;
+                    downloadLink.download = `product_photo_${i+1}.png`;
+                    downloadLink.textContent = 'Unduh';
+                    downloadLink.className = 'w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-md text-sm transition-colors';
+
+                    const createVideoButton = document.createElement('button');
+                    createVideoButton.textContent = 'Buat Video';
+                    createVideoButton.className = 'w-full text-center bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-3 rounded-md text-sm transition-colors col-span-1';
+                    if (!ai) {
+                        createVideoButton.disabled = true;
+                        createVideoButton.classList.add('opacity-50', 'cursor-not-allowed');
+                        createVideoButton.title = "Layanan video tidak tersedia";
+                    }
+                    
+                    const videoContainer = document.createElement('div');
+                    videoContainer.className = 'px-3 pb-3 hidden';
+                    createVideoButton.onclick = () => generateVideo(base64Data, lastThemeDescription, createVideoButton, videoContainer);
+
+                    buttonContainer.appendChild(viewButton);
+                    buttonContainer.appendChild(downloadLink);
+                    buttonContainer.appendChild(createVideoButton);
+                    poseCard.appendChild(img);
+                    poseCard.appendChild(buttonContainer);
+                    poseCard.appendChild(videoContainer);
+                    resultGrid.appendChild(poseCard);
+                });
+            }
+            generateButton.disabled = false;
+            generateButton.textContent = 'Buat 6 Foto Produk';
+        });
+
+        generateCaptionsButton.addEventListener('click', async () => {
+            captionsContainer.innerHTML = '<div class="flex justify-center items-center p-4"><div class="spinner w-8 h-8 border-4 border-t-blue-500 border-slate-200 rounded-full"></div><p class="ml-3 font-medium text-slate-600">AI sedang meracik kata-kata...</p></div>';
+            captionsContainer.classList.remove('hidden');
+            const prompt = `You are a creative social media manager for a brand in Indonesia. Based on the product in the image and the photoshoot theme "${lastThemeDescription}", write 3 engaging Instagram captions in Indonesian. Make them distinct: one enthusiastic, one cool/minimalist, and one that tells a story. Include relevant hashtags.`;
+            const schema = {
+                type: "OBJECT",
+                properties: { "captions": { type: "ARRAY", items: { type: "OBJECT", properties: { "caption_text": { "type": "STRING" }, "hashtags": { "type": "STRING" } }, required: ["caption_text", "hashtags"] } } },
+                required: ["captions"]
+            };
+            try {
+                const result = await callTextAPI(prompt, productImageBase64, schema);
+                captionsContainer.innerHTML = '';
+                result.captions.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-slate-50 border border-slate-200 rounded-lg p-4';
+                    card.innerHTML = `<p class="text-slate-700 whitespace-pre-wrap">${item.caption_text}</p><p class="text-blue-600 font-semibold mt-2 text-sm">${item.hashtags}</p><button class="copy-btn mt-3 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-1 px-3 rounded-full transition-colors">Salin</button>`;
+                    card.querySelector('.copy-btn').onclick = (e) => {
+                        const btn = e.target;
+                        const fullText = `${item.caption_text}\n\n${item.hashtags}`;
+                        navigator.clipboard.writeText(fullText).then(() => {
+                             btn.textContent = 'Disalin!'; btn.disabled = true;
+                             setTimeout(() => { btn.textContent = 'Salin'; btn.disabled = false; }, 2000);
+                        });
+                    };
+                    captionsContainer.appendChild(card);
+                });
+            } catch (error) {
+                captionsContainer.innerHTML = `<div class="bg-red-50 border border-red-300 text-red-700 p-4 rounded-lg"><strong>Gagal membuat caption.</strong><p>${error.message}</p></div>`;
+            }
+        });
+        
+        startOverButton.addEventListener('click', () => {
+            productImageBase64 = null; modelImageBase64 = null; lastThemeDescription = '';
+            productImageUpload.value = ''; modelImageUpload.value = ''; customPromptInput.value = '';
+            productUploadPrompt.classList.remove('hidden'); productImagePreviewContainer.classList.add('hidden');
+            modelUploadPrompt.classList.remove('hidden'); modelImagePreviewContainer.classList.add('hidden');
+            selectAiModelRadio.checked = true; selectUploadModelRadio.checked = false;
+            aiModelOptions.classList.remove('hidden'); uploadModelSection.classList.add('hidden');
+            nextToStep2Button.disabled = true;
+            goToStep(1);
+        });
+        
+        // --- Event Listeners (Lipsync) ---
+        lsProductImageUpload.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            lsProductImagePreview.src = URL.createObjectURL(file);
+            lsProductUploadPrompt.classList.add('hidden');
+            lsProductImagePreviewContainer.classList.remove('hidden');
+            try {
+                lsProductImageBase64 = await fileToBase64(file);
+                lsNextToStep2Button.disabled = false;
+            } catch (error) {
+                console.error("Error converting lipsync product image:", error);
+                alert("Gagal memproses gambar produk.");
+            }
+        });
+        
+        lsModelImageUpload.addEventListener('change', async (e) => {
+             const file = e.target.files[0];
+            if (!file) return;
+            lsModelImagePreview.src = URL.createObjectURL(file);
+            lsModelUploadPrompt.classList.add('hidden');
+            lsModelImagePreviewContainer.classList.remove('hidden');
+            try { lsModelImageBase64 = await fileToBase64(file); } catch (error) { console.error("Error converting lipsync model image:", error); alert("Gagal memproses gambar model."); }
+        });
+        
+        lsSelectAiModelRadio.addEventListener('change', () => {
+            if (lsSelectAiModelRadio.checked) {
+                lsGenerationMode = 'ai';
+                lsAiModelOptions.classList.remove('hidden');
+                lsUploadModelSection.classList.add('hidden');
+                lsModelImageBase64 = null;
+                lsModelImageUpload.value = '';
+            }
+        });
+
+        lsSelectUploadModelRadio.addEventListener('change', () => {
+            if (lsSelectUploadModelRadio.checked) {
+                lsGenerationMode = 'upload';
+                lsAiModelOptions.classList.add('hidden');
+                lsUploadModelSection.classList.remove('hidden');
+            }
+        });
+        
+        lsGenderWomanRadio.addEventListener('change', () => { if (lsGenderWomanRadio.checked) lsHijabOptionContainer.classList.remove('hidden'); });
+        lsGenderManRadio.addEventListener('change', () => { if (lsGenderManRadio.checked) lsHijabOptionContainer.classList.add('hidden'); });
+        
+        lsNextToStep2Button.addEventListener('click', () => goToLipsyncStep(2));
+        lsBackToStep1Button.addEventListener('click', () => goToLipsyncStep(1));
+
+        lsGenerateButton.addEventListener('click', async () => {
+            if (!lsProductImageBase64) { alert("Harap unggah foto produk terlebih dahulu."); return; }
+            if (lsGenerationMode === 'upload' && !lsModelImageBase64) { alert("Anda memilih mode unggah, harap unggah foto model."); return; }
+            lsProductDescription = (lsProductDescriptionInput?.value || '').trim();
+            if (!lsProductDescription) { alert("Harap isi deskripsi produk terlebih dahulu."); return; }
+
+            lsGenerateButton.disabled = true;
+            lsGenerateButton.innerHTML = `<div class="flex items-center justify-center"><div class="spinner w-5 h-5 border-2 border-t-white border-white/30 rounded-full mr-2"></div><span>Memproses...</span></div>`;
+            
+            let processedProductImageBase64;
+            const selectedRatio = document.querySelector('input[name="ls-aspectRatio"]:checked').value;
+
+            try {
+                processedProductImageBase64 = await processImageToRatio(lsProductImageBase64, selectedRatio);
+            } catch (error) {
+                console.error("Error processing product image:", error);
+                goToLipsyncStep(1);
+                alert(`Gagal memproses rasio gambar: ${error.message}`);
+                lsGenerateButton.disabled = false;
+                lsGenerateButton.textContent = 'Buat 4 Foto & Skrip';
+                return;
+            }
+
+            goToLipsyncStep(3);
+            lsResultGrid.innerHTML = '';
+            let generatedCount = 0;
+            const errorMessages = new Set();
+            lsGenerationProgress.textContent = `${generatedCount}/4`;
+
+            const customPromptText = lsCustomPromptInput.value.trim();
+            lsLastThemeDescription = customPromptText || document.querySelector('input[name="ls-theme"]:checked').value;
+            const selectedShotType = document.querySelector('input[name="ls-shotType"]:checked').value;
+            
+            let aiModelDescription = '';
+            if (lsGenerationMode === 'ai') {
+                const gender = document.querySelector('input[name="ls-modelGender"]:checked').value;
+                const hijab = document.querySelector('input[name="ls-hijabOption"]:checked').value;
+                if (gender === 'woman') {
+                    aiModelDescription = (hijab === 'yes') 
+                        ? 'a beautiful young Indonesian woman in her early 20s, wearing a modern and stylish light-grey hijab, with warm brown eyes and a friendly, gentle smile.'
+                        : 'a beautiful young Southeast Asian woman in her early 20s, with long, flowing dark brown hair, soft brown eyes, and a natural, radiant smile.';
+                } else {
+                    aiModelDescription = 'a handsome young Indonesian man in his mid-20s, with short, neat black hair, a friendly expression, and a confident but approachable look.';
+                }
+            }
+            
+            const fullBodyModifiers = ["dynamic full-body pose, standing with excitement", "walking towards camera, pointing as if saying 'You need this!'", "sitting elegantly, gesturing towards a 'buy now' area", "candid laughing, as if reacting to a great deal"];
+            const closeUpModifiers = ["close-up, amazed expression while using product", "portrait from the chest up, winking and smiling", "over-the-shoulder view, turning to camera with a confident look", "holding product near face, pointing to it enthusiastically"];
+            const poseModifiers = selectedShotType === 'full-body' ? fullBodyModifiers : closeUpModifiers;
+            const selectedPoseModifiers = poseModifiers.slice(0, 4);
+            
+            const lipsyncScriptSchema = {
+                type: "OBJECT",
+                properties: { "script": { "type": "STRING" } },
+                required: ["script"]
+            };
+
+            const generationPromises = selectedPoseModifiers.map(async (modifier, i) => {
+                let imagePrompt;
+                if (lsGenerationMode === 'ai') {
+                    imagePrompt = `Create a hyper-realistic, 8k resolution, professional product photograph. The overall style and theme MUST BE: "${lsLastThemeDescription}". The product is the item from the first image. The model MUST be consistently depicted as: "${aiModelDescription}". The model is naturally using/wearing the product. The specific shot is a ${modifier}. The model's pose and expression must suggest a strong Call-To-Action (CTA), like pointing, showing excitement, or encouraging viewers to buy now. Ensure sharp focus and natural lighting. The final image must have a ${selectedRatio} aspect ratio.`;
+                } else {
+                     imagePrompt = `Create a hyper-realistic, 8k resolution, professional product photograph. The overall style and theme MUST BE: "${lsLastThemeDescription}". The model is the person from the second image, and their face must be clear, in sharp focus, and not blurred. The product is the item from the first image. The model must be wearing/using the product naturally. The specific shot is a ${modifier}. The model's pose and expression must suggest a strong Call-To-Action (CTA), like pointing, showing excitement, or encouraging viewers to buy now. The model's face must be consistent. Ensure natural lighting. The final image must have a ${selectedRatio} aspect ratio.`;
+                }
+
+                try {
+                    const imageData = await callImageAPI(imagePrompt, processedProductImageBase64, lsModelImageBase64);
+                    
+                    let scriptPrompt = '';
+                    const baseScriptPrompt = `Anda adalah seorang scriptwriter profesional untuk iklan video pendek (seperti TikTok/Reels) di Indonesia. Tugas Anda adalah membuat skrip lipsync yang super singkat, menarik, dan persuasif, pas untuk video berdurasi 6 detik. Gaya bahasa harus natural dan menjual. Tema visual iklannya adalah "${lsLastThemeDescription}".
+
+DESKRIPSI PRODUK (WAJIB):
+${lsProductDescription}
+
+Gunakan deskripsi di atas agar skrip spesifik dan akurat untuk produk yang dimaksud.`;
+
+                    switch (i) {
+                        case 0: // Scene 1: Hook
+                            scriptPrompt = `Buatkan Lypsing ${baseScriptPrompt} Ini adalah SCENE 1 dari 4 (Pembuka). Ciptakan rasa penasaran atau tunjukkan masalah umum yang relevan dengan produk. Hindari menyebutkan produk secara langsung. JANGAN ADA CTA.`;
+                            break;
+                        case 1: // Scene 2: Introduce solution
+                            scriptPrompt = `Buatkan Lypsing ${baseScriptPrompt} Ini adalah SCENE 2 dari 4 (Solusi). Perkenalkan produk sebagai jawaban dari masalah di scene 1. Buat audiens merasa 'ini yang aku butuhkan'. JANGAN ADA CTA.`;
+                            break;
+                        case 2: // Scene 3: Highlight benefit
+                            scriptPrompt = `Buatkan Lypsing ${baseScriptPrompt} Ini adalah SCENE 3 dari 4 (Manfaat). Sebutkan satu keuntungan paling 'wow' dari produk ini. Buat kalimat yang mudah diingat. JANGAN ADA CTA.`;
+                            break;
+                        case 3: // Scene 4: CTA
+                            scriptPrompt = `Buatkan Lypsing ${baseScriptPrompt} Ini adalah SCENE 4 dari 4 (CTA/Ajakan). Ini adalah bagian penutup yang paling penting. Buat ajakan bertindak (Call to Action) yang kuat, mendesak, dan jelas. Wajib gunakan tanda kutip tunggal (') untuk menekankan kata kunci. Contoh: 'Cuma hari ini! 'Klik' keranjang kuning sekarang!'`;
+                            break;
+                        default:
+                            scriptPrompt = `Buatkan Lypsing ${baseScriptPrompt} Buat satu kalimat singkat yang menarik tentang produk ini.`;
+                    }
+                    
+                    const scriptData = await callTextAPI(scriptPrompt, processedProductImageBase64, lipsyncScriptSchema);
+                    
+                    generatedCount++;
+                    lsGenerationProgress.textContent = `${generatedCount}/4`;
+                    return { imageData, script: scriptData.script };
+                } catch (error) {
+                    errorMessages.add(error.message);
+                    generatedCount++;
+                    lsGenerationProgress.textContent = `${generatedCount}/4`;
+                    return null;
+                }
+            });
+
+            const results = await Promise.all(generationPromises);
+            
+            lsLoadingState.classList.add('hidden');
+            const successfulResults = results.filter(r => r !== null && r.imageData && r.script);
+
+            if (successfulResults.length === 0) {
+                lsErrorState.classList.remove('hidden');
+                lsErrorMessage.innerHTML = `<strong>Maaf, sesi foto & skrip gagal.</strong><br>Pesan dari AI: "<em>${[...errorMessages][0] || "Unknown error."}</em>"`;
+            } else {
+                lsResultState.classList.remove('hidden');
+                successfulResults.forEach((result, i) => {
+                    const poseCard = document.createElement('div');
+                    poseCard.className = 'bg-white rounded-xl overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 border border-slate-200 group';
+                    
+                    const img = document.createElement('img');
+                    img.src = `data:image/png;base64,${result.imageData}`;
+                    img.alt = `Generated Pose ${i + 1}`;
+                    const ratioClass = { '9:16': 'aspect-[9/16]', '1:1': 'aspect-square', '16:9': 'aspect-video' }[selectedRatio] || 'aspect-[9/16]';
+                    img.className = `w-full h-auto object-cover ${ratioClass}`;
+
+                    const scriptContainer = document.createElement('div');
+                    scriptContainer.className = 'lipsync-script-container';
+                    const scriptText = document.createElement('p');
+                    scriptText.textContent = result.script;
+                    const copyButton = document.createElement('button');
+                    copyButton.textContent = 'Salin';
+                    copyButton.className = 'copy-btn bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-1 px-3 rounded-full transition-colors';
+                    copyButton.onclick = (e) => {
+                        const textToCopy = `buatkan lypsing '${result.script}'\n\ndan Teks Lypsing Jadikan sebagai subtitel\n\nJangan Pakai Musik`;
+                        navigator.clipboard.writeText(textToCopy).then(() => {
+                             copyButton.textContent = 'Disalin!';
+                             copyButton.disabled = true;
+                             setTimeout(() => { copyButton.textContent = 'Salin'; copyButton.disabled = false; }, 2000);
+                        });
+                    };
+                    scriptContainer.appendChild(scriptText);
+                    scriptContainer.appendChild(copyButton);
+
+                    const buttonContainer = document.createElement('div');
+                    buttonContainer.className = 'p-3 grid grid-cols-2 gap-2 bg-white';
+
+                    const viewButton = document.createElement('button');
+                    viewButton.textContent = 'Lihat';
+                    viewButton.className = 'w-full text-center bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-2 px-3 rounded-md text-sm transition-colors';
+                    viewButton.onclick = () => { modalImage.src = `data:image/png;base64,${result.imageData}`; imageModal.classList.remove('hidden'); };
+
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = `data:image/png;base64,${result.imageData}`;
+                    downloadLink.download = `product_photo_lipsync_${i+1}.png`;
+                    downloadLink.textContent = 'Unduh';
+                    downloadLink.className = 'w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-md text-sm transition-colors';
+
+                    buttonContainer.appendChild(viewButton);
+                    buttonContainer.appendChild(downloadLink);
+                    poseCard.appendChild(img);
+                    poseCard.appendChild(scriptContainer);
+                    poseCard.appendChild(buttonContainer);
+                    lsResultGrid.appendChild(poseCard);
+                });
+            }
+            lsGenerateButton.disabled = false;
+            lsGenerateButton.textContent = 'Buat 4 Foto & Skrip';
+        });
+
+        lsStartOverButton.addEventListener('click', () => {
+            lsProductImageBase64 = null; lsModelImageBase64 = null; lsLastThemeDescription = '';
+            lsProductImageUpload.value = ''; lsModelImageUpload.value = ''; lsCustomPromptInput.value = '';
+            lsProductUploadPrompt.classList.remove('hidden'); lsProductImagePreviewContainer.classList.add('hidden');
+            lsModelUploadPrompt.classList.remove('hidden'); lsModelImagePreviewContainer.classList.add('hidden');
+            lsSelectAiModelRadio.checked = true; lsSelectUploadModelRadio.checked = false;
+            lsAiModelOptions.classList.remove('hidden'); lsUploadModelSection.classList.add('hidden');
+            lsNextToStep2Button.disabled = true;
+            goToLipsyncStep(1);
+        });
+
+        // --- Event Listeners (Advertisement) ---
+        adProductImageUpload.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            adProductImagePreview.src = URL.createObjectURL(file);
+            adProductUploadPrompt.classList.add('hidden');
+            adProductImagePreviewContainer.classList.remove('hidden');
+            try {
+                adProductImageBase64 = await fileToBase64(file);
+                adNextToStep2Button.disabled = false;
+            } catch (error) {
+                console.error("Error converting advertisement product image:", error);
+                alert("Gagal memproses gambar produk.");
+            }
+        });
+        
+        adNextToStep2Button.addEventListener('click', () => goToAdStep(2));
+        adBackToStep1Button.addEventListener('click', () => goToAdStep(1));
+        
+        adGenerateButton.addEventListener('click', async () => {
+            if (!adProductImageBase64) { alert("Harap unggah foto produk terlebih dahulu."); return; }
+            const selectedAdType = document.querySelector('input[name="adType"]:checked')?.value;
+            const selectedVibe = document.querySelector('input[name="adVibe"]:checked')?.value;
+            const selectedLighting = document.querySelector('input[name="adLighting"]:checked')?.value;
+            const selectedAdRatio = document.querySelector('input[name="adAspectRatio"]:checked').value;
+            const customPrompt = adCustomPromptInput.value.trim();
+            if (!selectedAdType || !selectedVibe || !selectedLighting) { alert("Harap pilih jenis iklan, vibe, dan pencahayaan."); return; }
+
+            adGenerateButton.disabled = true;
+            adGenerateButton.innerHTML = `<div class="flex items-center justify-center"><div class="spinner w-5 h-5 border-2 border-t-white border-white/30 rounded-full mr-2"></div><span>Memproses...</span></div>`;
+
+            let processedAdProductImageBase64;
+            try {
+                processedAdProductImageBase64 = await processImageToRatio(adProductImageBase64, selectedAdRatio);
+            } catch (error) {
+                console.error("Error processing ad product image:", error);
+                goToAdStep(1);
+                alert(`Gagal memproses rasio gambar iklan: ${error.message}`);
+                adGenerateButton.disabled = false;
+                adGenerateButton.textContent = 'Buat 6 Iklan Produk';
+                return;
+            }
+            
+            goToAdStep(3);
+            adResultGrid.innerHTML = '';
+            const successfulResults = [];
+            const errorMessages = new Set();
+            adGenerationProgress.textContent = `0/6`;
+
+            const adTypeDescriptions = { 'lifestyle': 'lifestyle ad, relatable and engaging, set in a modern Indonesian context', 'product-focus': 'product-focused ad' };
+            const vibeDescriptions = { 'energetic': 'energetic and fun vibe, vibrant', 'cinematic': 'cinematic and epic vibe, dramatic', 'modern': 'modern and clean vibe, minimalist', 'natural': 'natural and organic vibe, earthy', 'tech': 'tech and futuristic vibe, innovative' };
+            const lightingDescriptions = { 'studio': 'professional studio lighting, even and soft', 'dramatic': 'dramatic lighting, high contrast', 'natural': 'soft natural sunlight', 'neon': 'vibrant neon lighting' };
+            const basePrompt = `product ad, style: ${adTypeDescriptions[selectedAdType]}, ${vibeDescriptions[selectedVibe]}, ${lightingDescriptions[selectedLighting]}. ${customPrompt ? `Additional details: "${customPrompt}"` : 'Visually appealing with strong product focus.'}`;
+            adLastThemeDescription = basePrompt;
+
+            const adModifiers = [ "dramatic close-up composition, highlighting product details and texture.", "aesthetic flat lay composition, surrounded by relevant elements.", "in-context shot, showing the product being used naturally.", "composition with a beautiful bokeh background, creating a sharp focus on the product.", "dynamic composition with water splashes or other moving elements to give a fresh impression.", "premium composition, product placed on a minimalist podium or stage." ];
+
+            let doneCount = 0;
+            const adSelection = adModifiers.slice(0, 6);
+            const adGenerationPromises = adSelection.map((modifier, i) => {
+                const fullPrompt = `ultra-realistic 8k product advertisement photo. theme: ${basePrompt}. specific composition: ${modifier}. sharp focus on the product from the input image. perfect lighting. The final image must have a ${selectedAdRatio} aspect ratio. IMPORTANT: do not reply with text, you must generate an image.`;
+                return (async () => {
+                    try {
+                        const imageData = await callImageAPI(fullPrompt, processedAdProductImageBase64);
+                        doneCount++;
+                        adGenerationProgress.textContent = `${doneCount}/6`;
+                        return imageData || null;
+                    } catch (error) {
+                        console.error(`Error generating image ${i + 1}:`, error);
+                        errorMessages.add(error.message);
+                        doneCount++;
+                        adGenerationProgress.textContent = `${doneCount}/6`;
+                        return null;
+                    }
+                })();
+            });
+
+            const adResults = await Promise.all(adGenerationPromises);
+            adResults.forEach(r => { if (r) successfulResults.push(r); });
+            
+            adLoadingState.classList.add('hidden');
+
+            if (successfulResults.length === 0) {
+                adErrorState.classList.remove('hidden');
+                adErrorMessage.innerHTML = `<strong>Maaf, pembuatan iklan gagal.</strong><br>Pesan dari AI: "<em>${[...errorMessages][0] || "Unknown error."}</em>"`;
+            } else {
+                adResultState.classList.remove('hidden');
+                adCaptionSection.classList.remove('hidden');
+                successfulResults.forEach((base64Data, i) => {
+                    const adCard = document.createElement('div');
+                    adCard.className = 'bg-white rounded-xl overflow-hidden shadow-lg transform hover:-translate-y-2 transition-transform duration-300 border border-slate-200 group';
+                    
+                    const img = document.createElement('img');
+                    img.src = `data:image/png;base64,${base64Data}`;
+                    img.alt = `Generated Ad ${i + 1}`;
+
+                    const adRatioClass = { '9:16': 'aspect-[9/16]', '1:1': 'aspect-square', '16:9': 'aspect-video' }[selectedAdRatio] || 'aspect-[9/16]';
+                    img.className = `w-full h-auto object-cover ${adRatioClass}`;
+
+                    const buttonContainer = document.createElement('div');
+                    buttonContainer.className = 'p-3 grid grid-cols-3 gap-2 bg-white';
+
+                    const viewButton = document.createElement('button');
+                    viewButton.textContent = 'Lihat';
+                    viewButton.className = 'w-full text-center bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold py-2 px-3 rounded-md text-sm transition-colors';
+                    viewButton.onclick = () => { modalImage.src = `data:image/png;base64,${base64Data}`; imageModal.classList.remove('hidden'); };
+
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = `data:image/png;base64,${base64Data}`;
+                    downloadLink.download = `product_ad_${i+1}.png`;
+                    downloadLink.textContent = 'Unduh';
+                    downloadLink.className = 'w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 rounded-md text-sm transition-colors';
+
+                    const createVideoButton = document.createElement('button');
+                    createVideoButton.textContent = 'Buat Video';
+                    createVideoButton.className = 'w-full text-center bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-3 rounded-md text-sm transition-colors col-span-1';
+                    if (!ai) {
+                        createVideoButton.disabled = true;
+                        createVideoButton.classList.add('opacity-50', 'cursor-not-allowed');
+                        createVideoButton.title = "Layanan video tidak tersedia";
+                    }
+
+                    const videoContainer = document.createElement('div');
+                    videoContainer.className = 'px-3 pb-3 hidden';
+                    createVideoButton.onclick = () => generateVideo(base64Data, adLastThemeDescription, createVideoButton, videoContainer);
+
+                    buttonContainer.appendChild(viewButton);
+                    buttonContainer.appendChild(downloadLink);
+                    buttonContainer.appendChild(createVideoButton);
+                    adCard.appendChild(img);
+                    adCard.appendChild(buttonContainer);
+                    adCard.appendChild(videoContainer);
+                    adResultGrid.appendChild(adCard);
+                });
+            }
+            adGenerateButton.disabled = false;
+            adGenerateButton.textContent = 'Buat 6 Iklan Produk';
+        });
+        
+        adGenerateCaptionsButton.addEventListener('click', async () => {
+            if (!adProductImageBase64 || !adLastThemeDescription) { alert("Harap generate iklan terlebih dahulu."); return; }
+            
+            adCaptionsContainer.innerHTML = '<div class="flex justify-center items-center p-4"><div class="spinner w-8 h-8 border-4 border-t-blue-500 border-slate-200 rounded-full"></div><p class="ml-3 font-medium text-slate-600">AI sedang meracik kata-kata...</p></div>';
+            adCaptionsContainer.classList.remove('hidden');
+            
+            const prompt = `You are a creative advertising copywriter for a brand in Indonesia. Based on the product in the image and the advertisement theme "${adLastThemeDescription}", write 3 compelling advertising copy in Indonesian. Make them distinct: one persuasive call-to-action, one benefit-focused, and one emotional appeal. Include relevant hashtags for social media.`;
+            const schema = {
+                type: "OBJECT",
+                properties: { "captions": { type: "ARRAY", items: { type: "OBJECT", properties: { "caption_text": { "type": "STRING" }, "hashtags": { "type": "STRING" } }, required: ["caption_text", "hashtags"] } } },
+                required: ["captions"]
+            };
+            try {
+                const result = await callTextAPI(prompt, adProductImageBase64, schema);
+                adCaptionsContainer.innerHTML = '';
+                result.captions.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-slate-50 border border-slate-200 rounded-lg p-4';
+                    card.innerHTML = `<p class="text-slate-700 whitespace-pre-wrap">${item.caption_text}</p><p class="text-blue-600 font-semibold mt-2 text-sm">${item.hashtags}</p><button class="copy-btn mt-3 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold py-1 px-3 rounded-full transition-colors">Salin</button>`;
+                    card.querySelector('.copy-btn').onclick = (e) => {
+                        const btn = e.target;
+                        const fullText = `${item.caption_text}\n\n${item.hashtags}`;
+                        navigator.clipboard.writeText(fullText).then(() => {
+                            btn.textContent = 'Disalin!'; btn.disabled = true;
+                            setTimeout(() => { btn.textContent = 'Salin'; btn.disabled = false; }, 2000);
+                        });
+                    };
+                    adCaptionsContainer.appendChild(card);
+                });
+            } catch (error) {
+                adCaptionsContainer.innerHTML = `<div class="bg-red-50 border border-red-300 text-red-700 p-4 rounded-lg"><strong>Gagal membuat copy iklan.</strong><p>${error.message}</p></div>`;
+            }
+        });
+        
+        adStartOverButton.addEventListener('click', () => {
+            adProductImageBase64 = null; adLastThemeDescription = '';
+            adProductImageUpload.value = ''; adCustomPromptInput.value = '';
+            adProductUploadPrompt.classList.remove('hidden'); adProductImagePreviewContainer.classList.add('hidden');
+            adNextToStep2Button.disabled = true;
+            goToAdStep(1);
+        });
+
+        // --- Global & Init ---
+        modalCloseButton.addEventListener('click', () => imageModal.classList.add('hidden'));
+        imageModal.addEventListener('click', (e) => { if (e.target === imageModal) imageModal.classList.add('hidden'); });
+        
+        navPhotoshoot.addEventListener('click', () => switchFeature('photoshoot'));
+        navLipsync.addEventListener('click', () => switchFeature('lipsync'));
+        navAdvertisement.addEventListener('click', () => switchFeature('advertisement'));
+
+        // Initial setup
+        switchFeature('photoshoot');
+        goToStep(1);
+        goToLipsyncStep(1);
+        goToAdStep(1);
+    </script>
+    <!-- Overlay Verifikasi & Tema Oranye-Putih (tanpa mengubah struktur/logic yang ada) -->
+    <style>
+      /* Tema Oranye-Putih: override ringan tanpa menyentuh struktur */
+      body.theme-orange-white { background-color: #ffffff; color: #1f2937; }
+      /* Ubah aksen biru menjadi oranye di dalam tema ini */
+      .theme-orange-white .bg-blue-600 { background-color: #ea580c !important; }
+      .theme-orange-white .hover\:bg-blue-700:hover { background-color: #c2410c !important; }
+      .theme-orange-white .text-blue-600 { color: #ea580c !important; }
+      .theme-orange-white .border-blue-500 { border-color: #f97316 !important; }
+      .theme-orange-white .group:hover .group-hover\:text-blue-600 { color: #ea580c !important; }
+
+      /* Komponen khusus yang sebelumnya berwarna biru */
+      .theme-orange-white .custom-radio input[type="radio"]:checked + label {
+        background-color: #f97316 !important; /* orange-500 */
+        border-color: #f97316 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px 0 rgba(249, 115, 22, 0.3);
+      }
+      .theme-orange-white .custom-radio input[type="radio"]:checked + label .font-bold,
+      .theme-orange-white .custom-radio input[type="radio"]:checked + label .text-slate-500,
+      .theme-orange-white .custom-radio input[type="radio"]:checked + label span,
+      .theme-orange-white .custom-radio input[type="radio"]:checked + label svg { color: #ffffff !important; stroke: #ffffff !important; }
+      .theme-orange-white .nav-button.active {
+        background-color: #f97316 !important; color: #ffffff !important;
+        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3) !important;
+      }
+
+      /* Overlay verifikasi akses */
+      #access-overlay { position: fixed; inset: 0; z-index: 999999; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.95); }
+      #access-card { width: 100%; max-width: 420px; background: #ffffff; border: 1px solid #fdba74; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 10px 20px rgba(0,0,0,0.06); }
+      #access-title { font-size: 1.5rem; font-weight: 800; color: #ea580c; text-align: center; margin-bottom: 0.5rem; }
+      #access-sub { color: #64748b; text-align: center; margin-bottom: 1rem; }
+      #access-input { width: 100%; border: 1px solid #cbd5e1; border-radius: 0.5rem; padding: 0.75rem; font-size: 0.95rem; }
+      #access-btn { width: 100%; margin-top: 0.75rem; background: #ea580c; color: #ffffff; font-weight: 700; padding: 0.75rem; border-radius: 0.5rem; cursor: pointer; }
+      #access-btn:hover { background: #c2410c; }
+      #access-error { display: none; margin-top: 0.75rem; color: #dc2626; text-align: center; font-size: 0.9rem; }
+    </style>
+    <div id="access-overlay" aria-hidden="true">
+      <div id="access-card" role="dialog" aria-modal="true" aria-labelledby="access-title">
+        <div id="access-title">Verifikasi Akses</div>
+        <div id="access-sub">Masukkan Lisensi untuk melanjutkan.</div>
+        <input id="access-input" type="text" placeholder="Teks verifikasi" autocomplete="off" />
+        <button id="access-btn">Verifikasi</button>
+        <div id="access-error">Teks tidak cocok. Coba lagi.</div>
+      </div>
+    </div>
+    <script>
+      (function() {
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQh4TqG9f5pi6yN67VheI6aI61wYC04y9xsE1PHW3EAt-Q1VlVKaLb9kmHjZFfI7JUppmztoP3DabiV/pub?output=csv';
+
+        function splitCSVRow(row) {
+          const res = []; let cur = ''; let inQuotes = false;
+          for (let i = 0; i < row.length; i++) {
+            const ch = row[i];
+            if (ch === '"') {
+              if (inQuotes && row[i+1] === '"') { cur += '"'; i++; }
+              else { inQuotes = !inQuotes; }
+            } else if (ch === ',' && !inQuotes) { res.push(cur); cur = ''; }
+            else { cur += ch; }
+          }
+          res.push(cur);
+          return res.map(s => s.trim());
+        }
+
+        function parseCSVToSet(text) {
+          const set = new Set();
+          text.split(/\r?\n/).forEach(row => {
+            if (!row) return;
+            splitCSVRow(row).forEach(val => {
+              const v = val.trim();
+              if (v) set.add(v);
+            });
+          });
+          return set;
+        }
+
+        function init() {
+          // Terapkan tema oranye-putih tanpa mengubah markup asli
+          document.body.classList.add('theme-orange-white');
+          // Blokir scroll sampai verifikasi
+          const prevOverflow = document.documentElement.style.overflow;
+          document.documentElement.style.overflow = 'hidden';
+
+          const overlay = document.getElementById('access-overlay');
+          const input = document.getElementById('access-input');
+          const btn = document.getElementById('access-btn');
+          const err = document.getElementById('access-error');
+
+          let allowedSet = null;
+
+          // Prefetch CSV
+          fetch(CSV_URL, { cache: 'no-store' })
+            .then(r => r.text())
+            .then(t => { allowedSet = parseCSVToSet(t); })
+            .catch(() => { /* Jika gagal fetch, tetap minta input dan coba saat klik */ });
+
+          function verify() {
+            const val = (input.value || '').trim();
+            if (!val) { err.textContent = 'Input tidak boleh kosong.'; err.style.display = 'block'; return; }
+            const onSuccess = () => {
+              overlay.style.display = 'none';
+              err.style.display = 'none';
+              document.documentElement.style.overflow = prevOverflow || '';
+            };
+            // Selalu ambil CSV terbaru (real-time) saat verifikasi
+            const url = CSV_URL + (CSV_URL.includes('?') ? '&' : '?') + 'ts=' + Date.now();
+            fetch(url, { cache: 'no-store' })
+              .then(r => r.text())
+              .then(t => {
+                allowedSet = parseCSVToSet(t);
+                if (allowedSet && allowedSet.has(val)) {
+                  onSuccess();
+                } else {
+                  err.textContent = 'Teks tidak cocok. Coba lagi.';
+                  err.style.display = 'block';
+                }
+              })
+              .catch(() => {
+                err.textContent = 'Gagal mengambil CSV. Coba lagi.';
+                err.style.display = 'block';
+              });
+          }
+
+          btn.addEventListener('click', verify);
+          input.addEventListener('keydown', (e) => { if (e.key === 'Enter') verify(); });
+        }
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+      })();
+    </script>
+</body>
+</html>

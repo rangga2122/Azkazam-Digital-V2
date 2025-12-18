@@ -1,0 +1,46 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+token supabased.txt
+supbased login.txt
+
+# Project-specific local data (do not publish)
+data di Perlukan.txt
+Merger video dan Editor Video/data di Perlukan.txt
+
+# Vercel & Supabase local artifacts
+.vercel
+supabase/.temp/
+
+# Large binary archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+supabase_windows_amd64.tar.gz
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

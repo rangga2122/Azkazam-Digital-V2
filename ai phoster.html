@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Poster Generator V.2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <!-- Impor Library Cropper.js --><link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <!-- Impor Library html2canvas --><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { 
+            font-family: 'Poppins', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f8fafc; /* bg-slate-50 */
+            color: #1e293b; /* text-slate-800 */
+        }
+        .main-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0; /* border-slate-200 */
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+        }
+        .loader, .mini-loader { border-radius: 50%; animation: spin 1.5s linear infinite; }
+        .loader { border: 8px solid #e2e8f0; border-top: 8px solid #ef4444; /* red-500 */ width: 60px; height: 60px; }
+        .mini-loader { border: 2px solid #e2e8f0; border-top: 2px solid #ef4444; /* red-500 */ width: 16px; height: 16px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        #upload-label, #model-upload-label {
+            border: 2px dashed #fca5a5; /* red-300 */
+            background-color: #f8fafc; /* bg-slate-50 */
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #upload-label { padding: 2rem; }
+        #model-upload-label { padding: 1rem; }
+        #upload-label:hover, #upload-label.dragover,
+        #model-upload-label:hover, #model-upload-label.dragover {
+            border-color: #ef4444; /* red-500 */
+            background-color: #fef2f2; /* red-50 */
+        }
+
+        .thumbnail-container { display: flex; gap: 10px; flex-wrap: wrap; min-height: 78px; align-items: center; background-color: #f1f5f9; border-radius: 0.5rem; padding: 10px; border: 1px solid #e2e8f0; }
+        .thumbnail { 
+            height: 60px; 
+            width: auto; 
+            max-width: 120px;
+            object-fit: contain; 
+            border-radius: 0.375rem; 
+            border: 2px solid #cbd5e1;
+            background-color: #e2e8f0;
+        }
+        
+        .result-grid-item {
+            position: relative; 
+            overflow: hidden;
+            border-radius: 0.75rem;
+            background-color: #e2e8f0;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+            transform: scale(1); 
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .result-grid-item:hover {
+             transform: scale(1.03) translateY(-5px);
+             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        .result-image { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 0.75rem;
+        }
+        .result-overlay {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+            padding: 2.5rem 1rem 1rem;
+            display: flex; justify-content: center; gap: 1rem;
+            opacity: 0; transform: translateY(100%);
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .result-grid-item:hover .result-overlay { opacity: 1; transform: translateY(0); }
+        .overlay-button {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            color: #1e293b;
+            border-radius: 9999px; padding: 0.75rem;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        .overlay-button:hover { background-color: white; transform: scale(1.1); }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(17, 24, 39, 0.75); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; backdrop-filter: blur(5px); }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
+        .modal-content { background-color: white; color: #334155; padding: 24px; border-radius: 12px; max-width: 90vw; max-height: 90vh; overflow: auto; transform: scale(0.95); transition: transform 0.3s; }
+        .modal-overlay.visible .modal-content { transform: scale(1); }
+        #cropper-container img { max-width: 100%; max-height: 70vh; }
+        #lightbox-content img { max-width: 80vw; max-height: 80vh; object-fit: contain; border-radius: 0.5rem; }
+
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
+        .toast { padding: 12px 20px; border-radius: 8px; font-weight: 500; background-color: white; color: #1e293b; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); opacity: 0; transform: translateX(100%); animation: slideIn 0.5s forwards, slideOut 0.5s 3.5s forwards; }
+        .toast.error { background-color: #dc2626; color: white; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+
+        .form-input, .form-select {
+            background-color: #f8fafc; /* bg-slate-50 */
+            border-color: #e2e8f0; /* border-slate-200 */
+            color: #0f172a; /* text-slate-900 */
+            transition: all 0.2s ease-in-out;
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: #ef4444; /* red-500 */
+            --tw-ring-color: #fecaca; /* ring-red-200 */
+            box-shadow: 0 0 0 2px var(--tw-ring-color);
+        }
+        .aspect-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .aspect-btn:hover {
+            background-color: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        .aspect-btn.active {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            border-color: #ef4444; /* red-500 */
+        }
+        #generate-poster-btn {
+            font-weight: 700;
+            border: none;
+            color: white;
+            padding: 0.8rem 2.5rem;
+            border-radius: 9999px;
+            transition: all 0.3s ease-in-out;
+            background-image: linear-gradient(to right, #ef4444 0%, #dc2626 51%, #ef4444 100%); /* red gradient */
+            background-size: 200% auto;
+            box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.4); /* red shadow */
+        }
+        #generate-poster-btn:hover {
+            background-position: right center;
+            box-shadow: 0 15px 25px -5px rgba(220, 38, 38, 0.5); /* darker red shadow */
+            transform: scale(1.05);
+        }
+        #generate-poster-btn:disabled {
+            cursor: not-allowed;
+            background-image: none;
+            background-color: #94a3b8; /* slate-400 */
+            box-shadow: none;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Container tersembunyi untuk merender teks menjadi gambar --><div id="text-render-container" style="position: absolute; left: -9999px; top: 0; font-family: 'Poppins', sans-serif; color: white; width: 800px; padding: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.7);">
+        <div id="text-render-details" style="display: flex; flex-direction: column; justify-content: center; font-size: 36px; line-height: 1.6;"></div>
+    </div>
+
+    <div id="main-content">
+        <div id="toast-container"></div>
+        <div class="container mx-auto p-4 md:p-8">
+            <div class="main-card rounded-2xl p-6 md:p-10">
+                <div class="text-center mb-10">
+                    <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-700">AI Poster Generator V.2</h1>
+                    <p class="text-slate-500 mt-3">Ciptakan Poster Promosi Profesional dalam Sekejap.</p>
+                    <p class="text-xs text-slate-400 mt-2 font-mono">© azkazamdigital.com</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10 mb-8">
+                    <!-- Kolom Kiri --><div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2"><span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-700">1.</span> Unggah Gambar Produk</label>
+                            <label for="product-images" id="upload-label" class="rounded-lg block">
+                                <div class="flex flex-col items-center justify-center">
+                                    <svg class="w-12 h-12 text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l-3 3m3-3l3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>
+                                    <p class="mt-2 text-sm text-slate-600">
+                                        <span class="font-semibold text-red-600">Klik untuk unggah</span> atau seret & lepas
+                                    </p>
+                                    <p class="text-xs text-slate-500">PNG, JPG, WEBP</p>
+                                </div>
+                            </label>
+                            <input type="file" id="product-images" multiple accept="image/jpeg, image/png, image/webp" class="hidden">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Pratinjau Gambar Produk</label>
+                            <div id="thumbnail-preview" class="thumbnail-container">
+                                <p id="thumbnail-placeholder" class="text-sm text-slate-500 self-center">Gambar produk akan muncul di sini.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Kolom Kanan --><div class="space-y-6">
+                        <div>
+                            <label for="design-style" class="block text-sm font-medium text-slate-700 mb-2"><span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-700">2.</span> Pilih Gaya Desain</label>
+                            <div class="flex items-center space-x-2">
+                                <select id="design-style" class="form-select block w-full rounded-md shadow-sm">
+                                    <option value="Manual">📝 Tulis Prompt Sendiri</option>
+                                    <option value="Random">✨ Gaya Acak (Individual)</option>
+                                    <option>Modern & Elegan</option>
+                                    <option>Minimalis Dominan Putih</option>
+                                    <option>Mewah (Gelap & Emas)</option>
+                                    <option>Cerah & Meriah</option>
+                                    <option>Produk Teknologi / Techy</option>
+                                    <option>Retro / Klasik 80-an</option>
+                                    <option>Futuristik & Neon</option>
+                                    <option>Organik / Alam</option>
+                                    <option>Fesyen / Gaya Hidup</option>
+                                    <option>Gradien Lembut</option>
+                                    <option>Industri / Urban</option>
+                                    <option>Pemandangan Cyberpunk</option>
+                                    <option>Gaya Memphis Ceria</option>
+                                    <option>Tampilan Sinematik Dramatis</option>
+                                    <option>Geometris Low Poly</option>
+                                    <option>Glamor Art Deco</option>
+                                    <option>Tekstur Grunge</option>
+                                    <option>Suasana Tropis</option>
+                                    <option>Alam Mimpi Surealis</option>
+                                    <option>Produk di Podium Studio</option>
+                                    <option>Gaya Editorial Majalah</option>
+                                    <option>Ledakan Warna Cair</option>
+                                    <option>Fokus Makro pada Detail</option>
+                                    <option>Komposisi Flat Lay</option>
+                                    <option>Efek Holografik</option>
+                                    <option>Pencahayaan Dramatis</option>
+                                </select>
+                                <button id="suggest-style-btn" title="Dapatkan saran gaya dari AI" class="p-2 bg-slate-100 text-slate-500 rounded-md transition hover:bg-slate-200 hover:text-red-600 shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                                </button>
+                            </div>
+                            <div id="manual-style-prompt-container" class="mt-4 hidden">
+                                <label for="manual-style-prompt" class="block text-sm font-medium text-slate-700 mb-2">Tulis Gaya Desain Kustom Anda</label>
+                                <textarea id="manual-style-prompt" placeholder="Contoh: Poster minimalis dengan latar belakang gradasi biru lembut dan pencahayaan studio..." rows="3" class="form-input block w-full rounded-md shadow-sm"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <label class="block text-sm font-medium text-slate-700"><span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-700">3.</span> Tulis Teks Promosi</label>
+                                <button id="generate-text-btn" class="hidden text-xs bg-red-100 text-red-800 font-semibold py-1 px-3 rounded-md transition hover:bg-red-200">✨ Buatkan Teks</button>
+                            </div>
+                            <div class="relative">
+                                <input type="text" id="headline" value="PROMO PRODUK SPESIAL" placeholder="Headline Utama" class="form-input block w-full rounded-md shadow-sm pr-10">
+                                <button id="idea-btn" class="absolute inset-y-0 right-0 flex items-center pr-3 group">
+                                    <svg class="h-5 w-5 text-slate-400 group-hover:text-red-600 transition" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm1.23-3.723a.75.75 0 00-1.449.39 5.5 5.5 0 01-9.201-2.466l-.312.311H3.989a.75.75 0 000 1.5h4.242a.75.75 0 00.75-.75V3.424a.75.75 0 00-1.5 0v2.43l-.31-.31a7 7 0 00-11.712 3.138.75.75 0 001.449.39z" clip-rule="evenodd" /></svg>
+                                </button>
+                                <div id="idea-loader" class="absolute inset-y-0 right-0 items-center pr-3 hidden"><div class="mini-loader"></div></div>
+                            </div>
+                            <div id="details-container" class="space-y-2"></div>
+                            <input type="text" id="promo-details" value="WA: 0812-3456-7890" placeholder="Kontak Utama (WA/Telp)" class="form-input block w-full rounded-md shadow-sm">
+                        </div>
+
+                        <div class="space-y-3 pt-4 border-t border-slate-200">
+                            <div>
+                                <label for="model-select" class="block text-sm font-medium text-slate-700 mb-2"><span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-700">4.</span> Tambahkan Model Manusia (Opsional)</label>
+                                <select id="model-select" class="form-select block w-full rounded-md shadow-sm">
+                                    <option value="none" selected>Tanpa Model</option>
+                                    <option value="custom">✨ Unggah Model Sendiri</option>
+                                    <option value="Indonesian woman">Wanita (Indonesia)</option>
+                                    <option value="Indonesian man">Pria (Indonesia)</option>
+                                    <option value="woman wearing a hijab">Wanita Berhijab</option>
+                                    <option value="Caucasian woman">Wanita (Kaukasia)</option>
+                                    <option value="Caucasian man">Pria (Kaukasia)</option>
+                                </select>
+                            </div>
+                            <div id="custom-model-upload-area" class="hidden space-y-3">
+                                <label for="model-image-input" id="model-upload-label" class="rounded-lg block">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <svg class="w-8 h-8 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                                        <p class="mt-1 text-xs text-slate-600"><span class="font-semibold text-red-600">Unggah foto model</span></p>
+                                        <p class="text-xs text-slate-500">Wajah harus terlihat jelas</p>
+                                    </div>
+                                </label>
+                                <input type="file" id="model-image-input" accept="image/jpeg, image/png, image/webp" class="hidden">
+                                <div id="model-thumbnail-preview" class="thumbnail-container hidden justify-center">
+                                    <p id="model-thumbnail-placeholder" class="text-sm text-slate-500 self-center">Model yang sudah dipotong.</p>
+                                </div>
+                            </div>
+                            <div>
+                                <input type="text" id="model-prompt" placeholder="Jelaskan pose atau ekspresi model (cth: tersenyum, memegang produk)..." class="form-input block w-full rounded-md shadow-sm">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-200 pt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <label for="batch-multiplier" class="text-sm font-medium text-slate-700">Jumlah Batch (x6):</label>
+                        <input type="number" id="batch-multiplier" value="1" min="1" max="10" class="form-input w-20 rounded-md shadow-sm text-center">
+                    </div>
+                    <button id="generate-poster-btn" disabled>
+                        Buat Poster!
+                    </button>
+                </div>
+            </div>
+
+            <div id="result-area" class="mt-12">
+                 <div id="controls-area" class="flex justify-center items-center gap-4 mb-6">
+                     <button id="download-all-btn" class="hidden items-center gap-2 bg-white text-slate-700 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-slate-100 transition-all transform hover:scale-105">
+                         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                         Unduh Semua Gambar (JPG)
+                     </button>
+                     <button id="stop-generation-btn" class="hidden items-center gap-2 bg-red-500 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-red-600 transition-all transform hover:scale-105">
+                         <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 10a.5.5 0 011 0v4a.5.5 0 01-1 0v-4zm4 0a.5.5 0 011 0v4a.5.5 0 01-1 0v-4z" /></svg>
+                         Hentikan
+                     </button>
+                 </div>
+                <div id="loader" class="hidden flex-col items-center justify-center p-8">
+                    <div class="loader mx-auto"></div>
+                    <p id="loader-text" class="mt-4 text-slate-600">AI sedang mendesain...</p>
+                </div>
+                <div id="result-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"></div>
+                <div id="placeholder" class="text-center text-slate-500 p-8">
+                    <svg class="mx-auto h-12 w-12 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+                    <p class="mt-2">Poster produk akan muncul di sini.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals --><div id="cropper-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="text-lg font-medium text-slate-900 mb-2">Potong Gambar</h3>
+            <p class="text-sm text-slate-500 mb-4">Pilih aspek rasio dan sesuaikan area potong gambar.</p>
+            <div class="flex items-center justify-center flex-wrap gap-2 mb-4" id="aspect-ratio-btns">
+                <button data-ratio="1" data-name="1:1 (Square)" data-resolution="around 1024x1024 pixels" class="aspect-btn active">1:1</button>
+                <button data-ratio="0.8" data-name="4:5 (Portrait)" data-resolution="around 820x1024 pixels" class="aspect-btn">4:5</button>
+                <button data-ratio="1.77777777778" data-name="16:9 (Landscape)" data-resolution="around 1024x576 pixels" class="aspect-btn">16:9</button>
+                <button data-ratio="0.5625" data-name="9:16 (Story)" data-resolution="around 576x1024 pixels" class="aspect-btn">9:16</button>
+                <button data-ratio="NaN" data-name="Free" data-resolution="" class="aspect-btn">Bebas</button>
+            </div>
+            <div id="cropper-container"><img id="image-to-crop" src=""></div>
+            <div class="text-right mt-4">
+                <button id="crop-btn" class="bg-red-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-700 transition">Selesai & Potong</button>
+            </div>
+        </div>
+    </div>
+    <div id="lightbox-modal" class="modal-overlay cursor-pointer">
+        <div id="lightbox-content" class="relative"><img id="lightbox-image" src=""></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get all interactive elements
+            const loader = document.getElementById('loader');
+            const loaderText = document.getElementById('loader-text');
+            const imageInput = document.getElementById('product-images');
+            const uploadLabel = document.getElementById('upload-label');
+            const thumbnailPreview = document.getElementById('thumbnail-preview');
+            const thumbnailPlaceholder = document.getElementById('thumbnail-placeholder');
+            const generatePosterBtn = document.getElementById('generate-poster-btn');
+            const resultGrid = document.getElementById('result-grid');
+            const placeholder = document.getElementById('placeholder');
+            const lightboxModal = document.getElementById('lightbox-modal');
+            const lightboxImage = document.getElementById('lightbox-image');
+            const headlineInput = document.getElementById('headline');
+            const detailsContainer = document.getElementById('details-container');
+            const promoDetailsInput = document.getElementById('promo-details');
+            const generateTextBtn = document.getElementById('generate-text-btn');
+            const ideaBtn = document.getElementById('idea-btn');
+            const ideaLoader = document.getElementById('idea-loader');
+            const designStyleSelect = document.getElementById('design-style');
+            const suggestStyleBtn = document.getElementById('suggest-style-btn');
+            const cropperModal = document.getElementById('cropper-modal');
+            const imageToCrop = document.getElementById('image-to-crop');
+            const cropBtn = document.getElementById('crop-btn');
+            const batchMultiplierInput = document.getElementById('batch-multiplier');
+            const downloadAllBtn = document.getElementById('download-all-btn');
+            const stopGenerationBtn = document.getElementById('stop-generation-btn');
+            const textRenderContainer = document.getElementById('text-render-container');
+            const textRenderDetails = document.getElementById('text-render-details');
+            const modelSelect = document.getElementById('model-select');
+            const modelPromptInput = document.getElementById('model-prompt');
+            const customModelUploadArea = document.getElementById('custom-model-upload-area');
+            const modelUploadLabel = document.getElementById('model-upload-label');
+            const modelImageInput = document.getElementById('model-image-input');
+            const modelThumbnailPreview = document.getElementById('model-thumbnail-preview');
+            const modelThumbnailPlaceholder = document.getElementById('model-thumbnail-placeholder');
+            const manualStylePromptContainer = document.getElementById('manual-style-prompt-container');
+            const manualStylePrompt = document.getElementById('manual-style-prompt');
+            
+            // App state variables
+            let uploadedImages = [];
+            let uploadedModelImage = null;
+            let cropper;
+            let currentFileResolve;
+            let isGenerationCancelled = false;
+            let currentAspectRatio = 1;
+            let currentAspectRatioName = "1:1 (Square)";
+            let currentAspectRatioResolution = "around 1024x1024 pixels";
+            const apiKey = ""; 
+            
+            // Initialize detail inputs with placeholders
+            const initialPlaceholders = ["Kualitas Premium", "Stok Terbatas", "Pengiriman Cepat", "Garansi Resmi"];
+            for (let i = 0; i < 4; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = `detail-input-${i}`;
+                input.className = 'form-input block w-full rounded-md shadow-sm';
+                input.placeholder = `Poin Keunggulan ${i + 1}`;
+                input.value = initialPlaceholders[i] || '';
+                detailsContainer.appendChild(input);
+            }
+
+            // --- UTILITY FUNCTIONS ---
+            function showToast(message, isError = false) {
+                const toastContainer = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast ${isError ? 'error' : ''}`;
+                toast.textContent = message;
+                toastContainer.appendChild(toast);
+                toast.addEventListener('animationend', (e) => {
+                    if (e.animationName === 'slideOut') toast.remove();
+                });
+            }
+
+            function extractJson(text) {
+                const markdownMatch = text.match(/```json\s*([\s\S]*?)\s*```/);
+                if (markdownMatch && markdownMatch[1]) {
+                    try { return JSON.parse(markdownMatch[1]); } catch (e) { console.error("JSON parse error from markdown:", e); }
+                }
+                const generalMatch = text.match(/{[\s\S]*}/);
+                if (generalMatch && generalMatch[0]) {
+                    try { return JSON.parse(generalMatch[0]); } catch (e) { console.error("JSON parse error from text:", e); }
+                }
+                throw new Error("Could not find valid JSON in AI response.");
+            }
+
+            const setModalVisibility = (modal, isVisible) => {
+                if (isVisible) modal.classList.add('visible');
+                else modal.classList.remove('visible');
+            };
+            
+            const updateGenerateButtonState = () => {
+                generatePosterBtn.disabled = uploadedImages.length === 0;
+            };
+
+            // --- IMAGE PROCESSING LOGIC ---
+            const processFiles = async (files) => {
+                uploadedImages = [];
+                thumbnailPreview.innerHTML = '';
+                thumbnailPlaceholder.classList.add('hidden');
+
+                for (const file of files) {
+                    try {
+                        const croppedImage = await cropImage(file);
+                        uploadedImages.push({
+                            mimeType: croppedImage.type,
+                            data: croppedImage.data.split(',')[1]
+                        });
+                        const img = document.createElement('img');
+                        img.src = croppedImage.data;
+                        img.classList.add('thumbnail');
+                        thumbnailPreview.appendChild(img);
+                    } catch (error) { 
+                        console.error('Cropping cancelled or failed for a file', error); 
+                        showToast('Proses potong gambar dibatalkan.');
+                    }
+                }
+
+                if (uploadedImages.length > 0) {
+                    generateTextBtn.classList.remove('hidden');
+                } else {
+                    thumbnailPlaceholder.classList.remove('hidden');
+                }
+                
+                updateGenerateButtonState();
+                imageInput.value = '';
+            };
+
+            const processModelFile = async (file) => {
+                try {
+                    const croppedImage = await cropImage(file);
+                    uploadedModelImage = {
+                        mimeType: croppedImage.type,
+                        data: croppedImage.data.split(',')[1]
+                    };
+                    
+                    modelThumbnailPreview.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = croppedImage.data;
+                    img.classList.add('thumbnail');
+                    modelThumbnailPreview.appendChild(img);
+                    modelThumbnailPreview.classList.remove('hidden');
+                    modelThumbnailPlaceholder.classList.add('hidden');
+                    showToast('Gambar model berhasil dipotong dan siap digunakan.');
+
+                } catch (error) {
+                    console.error('Model image cropping cancelled or failed', error);
+                    showToast('Proses potong gambar model dibatalkan.');
+                    uploadedModelImage = null;
+                }
+                modelImageInput.value = '';
+            };
+
+            const cropImage = (file) => {
+                return new Promise((resolve, reject) => {
+                    currentFileResolve = { resolve, reject };
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imageToCrop.src = e.target.result;
+                        setModalVisibility(cropperModal, true);
+                        if (cropper) cropper.destroy();
+                        
+                        const activeBtn = document.querySelector('#aspect-ratio-btns .aspect-btn.active') || document.querySelector('#aspect-ratio-btns .aspect-btn[data-ratio="1"]');
+                        const ratio = parseFloat(activeBtn.dataset.ratio);
+                        cropper = new Cropper(imageToCrop, { aspectRatio: ratio, viewMode: 1, background: false });
+                    };
+                    reader.onerror = (error) => reject(error);
+                    reader.readAsDataURL(file);
+                });
+            };
+            
+            // --- API CALL ---
+            async function generateTextFromLLM(payload) {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}, body: ${await response.text()}`);
+                return response.json();
+            }
+
+            // --- UI EVENT LISTENERS ---
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadLabel.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+            });
+            ['dragenter', 'dragover'].forEach(eventName => uploadLabel.addEventListener(eventName, () => uploadLabel.classList.add('dragover'), false));
+            ['dragleave', 'drop'].forEach(eventName => uploadLabel.addEventListener(eventName, () => uploadLabel.classList.remove('dragover'), false));
+            uploadLabel.addEventListener('drop', (e) => { if (e.dataTransfer.files.length > 0) processFiles(e.dataTransfer.files); }, false);
+            imageInput.addEventListener('change', (event) => { if (event.target.files.length > 0) processFiles(event.target.files); });
+            
+            modelSelect.addEventListener('change', () => {
+                if (modelSelect.value === 'custom') {
+                    customModelUploadArea.classList.remove('hidden');
+                } else {
+                    customModelUploadArea.classList.add('hidden');
+                    uploadedModelImage = null; 
+                    modelThumbnailPreview.innerHTML = `<p id="model-thumbnail-placeholder" class="text-sm text-slate-500 self-center">Model yang sudah dipotong.</p>`;
+                    modelThumbnailPreview.classList.add('hidden');
+                }
+            });
+            modelImageInput.addEventListener('change', (event) => { if (event.target.files.length > 0) processModelFile(event.target.files[0]); });
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                modelUploadLabel.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+            });
+            ['dragenter', 'dragover'].forEach(eventName => modelUploadLabel.addEventListener(eventName, () => modelUploadLabel.classList.add('dragover'), false));
+            ['dragleave', 'drop'].forEach(eventName => modelUploadLabel.addEventListener(eventName, () => modelUploadLabel.classList.remove('dragover'), false));
+            modelUploadLabel.addEventListener('drop', (e) => { if (e.dataTransfer.files.length > 0) processModelFile(e.dataTransfer.files[0]); }, false);
+            
+            designStyleSelect.addEventListener('change', () => {
+                manualStylePromptContainer.classList.toggle('hidden', designStyleSelect.value !== 'Manual');
+            });
+            
+            cropperModal.addEventListener('click', (e) => {
+                if (e.target === cropperModal) {
+                    if (currentFileResolve) {
+                        currentFileResolve.reject('Cropping cancelled by user');
+                        currentFileResolve = null;
+                    }
+                    setModalVisibility(cropperModal, false);
+                }
+            });
+
+            cropBtn.addEventListener('click', () => {
+                if (currentFileResolve) {
+                    const croppedCanvas = cropper.getCroppedCanvas({ maxWidth: 1024, maxHeight: 1024 });
+                    currentFileResolve.resolve({ data: croppedCanvas.toDataURL('image/png'), type: 'image/png'});
+                    currentFileResolve = null;
+                }
+                setModalVisibility(cropperModal, false);
+                if (cropper) cropper.destroy();
+            });
+
+            document.getElementById('aspect-ratio-btns').addEventListener('click', (e) => {
+                const target = e.target.closest('.aspect-btn');
+                if (target) {
+                    currentAspectRatio = parseFloat(target.dataset.ratio);
+                    currentAspectRatioName = target.dataset.name;
+                    currentAspectRatioResolution = target.dataset.resolution;
+                    cropper.setAspectRatio(currentAspectRatio);
+                    document.querySelectorAll('#aspect-ratio-btns .aspect-btn').forEach(btn => btn.classList.remove('active'));
+                    target.classList.add('active');
+                }
+            });
+
+            lightboxModal.addEventListener('click', () => setModalVisibility(lightboxModal, false));
+            stopGenerationBtn.addEventListener('click', () => {
+                isGenerationCancelled = true;
+                showToast("Proses pembuatan gambar akan dihentikan...");
+            });
+
+            // --- MAIN GENERATION LOGIC ---
+            generatePosterBtn.addEventListener('click', async () => {
+                if (uploadedImages.length === 0) {
+                    showToast('Mohon unggah gambar produk terlebih dahulu.', true);
+                    return;
+                }
+                if (modelSelect.value === 'custom' && !uploadedModelImage) {
+                    showToast('Anda memilih "Unggah Model Sendiri", mohon unggah gambar model.', true);
+                    return;
+                }
+                 if (designStyleSelect.value === 'Manual' && manualStylePrompt.value.trim() === '') {
+                    showToast('Anda memilih "Tulis Prompt Sendiri", mohon isi prompt gaya Anda.', true);
+                    return;
+                }
+
+                isGenerationCancelled = false;
+                const multiplier = parseInt(batchMultiplierInput.value, 10) || 1;
+                let generatedImageCount = 0;
+                placeholder.classList.add('hidden');
+                resultGrid.innerHTML = '';
+                downloadAllBtn.classList.add('hidden');
+                loader.classList.remove('hidden');
+                loader.classList.add('flex');
+                stopGenerationBtn.classList.remove('hidden');
+                generatePosterBtn.disabled = true;
+                
+                loaderText.textContent = 'Mempersiapkan teks...';
+                const detailInputs = document.querySelectorAll('#details-container input');
+                const detailsText = Array.from(detailInputs).map(input => input.value.trim()).filter(Boolean).map(line => `<div>• ${line}</div>`).join('');
+                textRenderDetails.innerHTML = detailsText;
+                if (currentAspectRatio && !isNaN(currentAspectRatio)) {
+                    textRenderContainer.style.height = `${800 / currentAspectRatio}px`;
+                    textRenderDetails.style.height = '100%';
+                    textRenderDetails.style.width = '100%';
+                }
+                const textCanvas = await html2canvas(textRenderContainer, { backgroundColor: null });
+                textRenderContainer.style.height = '';
+                textRenderDetails.style.height = '';
+                textRenderDetails.style.width = '';
+                const detailsImageData = {
+                    mimeType: 'image/png',
+                    data: textCanvas.toDataURL('image/png').split(',')[1]
+                };
+
+                generatePosterBtn.textContent = 'Memproses...';
+                
+                let styleForBatch;
+                if (designStyleSelect.value === 'Manual') {
+                    styleForBatch = manualStylePrompt.value.trim();
+                } else if (designStyleSelect.value !== 'Random') {
+                    styleForBatch = designStyleSelect.value;
+                }
+
+                for (let i = 0; i < multiplier; i++) {
+                    if (isGenerationCancelled) {
+                        showToast("Proses dihentikan oleh pengguna.");
+                        break;
+                    }
+                    loaderText.textContent = `AI memproses batch ${i + 1} dari ${multiplier}...`;
+                    
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
+
+                    const createDetailedPrompt = (style) => {
+                        const headline = headlineInput.value;
+                        const promoDetails = promoDetailsInput.value;
+                        
+                        let modelPromptPart = "";
+                        if (modelSelect.value === 'custom' && uploadedModelImage) {
+                            modelPromptPart = `\n- **Human Model**: You are provided with an image of a specific person. It is CRITICAL that you use the exact person from this provided image. Replicate their face, hair, and appearance with the highest fidelity. Do not change the person.\n- **Model Pose/Action**: ${modelPromptInput.value || 'Place the model naturally in the scene'}. IMPORTANT: The product must remain the primary focus and be visually larger than the model.`;
+                        } else if (modelSelect.value !== 'none' && modelSelect.value !== 'custom') {
+                            modelPromptPart = `\n- **Human Model**: Include a photorealistic ${modelSelect.value}. Pose/Action: ${modelPromptInput.value || 'interacting with the product'}. IMPORTANT: Ensure the human model is scaled to be smaller than the product. The product must be the primary focus and visually larger than the model.`;
+                        }
+                        
+                        let resolutionPrompt = currentAspectRatioResolution ? `, with a target resolution of **${currentAspectRatioResolution}**` : '';
+                        
+                        return `Act as a meticulous graphic designer creating a high-resolution promotional image.
+- **Style**: The visual style must be: "${style}".
+- **Aspect Ratio**: CRITICAL! The final image's aspect ratio MUST BE EXACTLY **${currentAspectRatioName}**${resolutionPrompt}. This is the most important instruction.
+- **Tasks**:
+  1.  **Write Headline**: Write the following headline text directly onto the image: "${headline}".
+  2.  **Integrate Details Image**: You are provided with a separate, pre-rendered image that contains a list of features. Integrate this image as a block of text. Do not alter or rewrite the text within that image.
+  3.  **Write Contact Info**: Write the following contact information at the bottom of the poster: "${promoDetails}".
+  4.  **Integrate Product Images**: Seamlessly integrate all provided product images into the scene.
+${modelPromptPart}
+- **Crucial Text Instructions**: Spell the text (Headline and Contact) EXACTLY as provided. NO TYPOS. For the details, use the image provided.`;
+                    };
+
+                    const createPayload = (style) => {
+                        const detailedPrompt = createDetailedPrompt(style);
+                        const parts = [{ text: detailedPrompt }];
+                        uploadedImages.forEach(img => parts.push({ inlineData: { mimeType: img.mimeType, data: img.data } }));
+                        if (modelSelect.value === 'custom' && uploadedModelImage) {
+                            parts.push({ inlineData: { mimeType: uploadedModelImage.mimeType, data: uploadedModelImage.data } });
+                        }
+                        parts.push({ inlineData: { mimeType: detailsImageData.mimeType, data: detailsImageData.data }});
+                        return { contents: [{ parts }], generationConfig: { responseModalities: ['IMAGE'] } };
+                    };
+
+                    let batchPromises;
+                    if (designStyleSelect.value === 'Random') {
+                        showToast(`Batch ${i+1}: Membuat 6 gambar dengan gaya acak...`);
+                        const options = Array.from(designStyleSelect.options).map(opt => opt.value).filter(val => val !== 'Random' && val !== 'Manual' && val);
+                        batchPromises = Array(6).fill(null).map(() => {
+                            const randomStyle = options[Math.floor(Math.random() * options.length)];
+                            return fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(createPayload(randomStyle)) });
+                        });
+                    } else {
+                        const payload = createPayload(styleForBatch);
+                        const fetchOptions = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) };
+                        batchPromises = Array(6).fill(null).map(() => fetch(apiUrl, fetchOptions));
+                    }
+
+                    try {
+                        const responses = await Promise.all(batchPromises);
+                        const results = await Promise.all(responses.map(res => res.ok ? res.json() : Promise.reject(new Error(`HTTP error! status: ${res.status}`))));
+                        results.forEach((result) => {
+                            const base64Data = result?.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
+                            if (base64Data) {
+                                createImageCard(base64Data, generatedImageCount);
+                                generatedImageCount++;
+                            }
+                        });
+                    } catch (error) {
+                        console.error(`Error on batch ${i+1}:`, error);
+                        showToast(`Gagal pada batch ${i+1}: ${error.message}`, true);
+                        break; 
+                    }
+                }
+
+                loader.classList.add('hidden');
+                loader.classList.remove('flex');
+                stopGenerationBtn.classList.add('hidden');
+                generatePosterBtn.disabled = false;
+                generatePosterBtn.innerHTML = 'Buat Poster Lagi!';
+                if(resultGrid.children.length > 0) downloadAllBtn.classList.remove('hidden');
+            });
+
+            // --- RESULT DISPLAY AND ACTIONS ---
+            function createImageCard(base64Data, index) {
+                const imageUrl = `data:image/png;base64,${base64Data}`;
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'result-grid-item';
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.className = 'result-image';
+                const overlayDiv = document.createElement('div');
+                overlayDiv.className = 'result-overlay';
+                
+                const viewButton = document.createElement('button');
+                viewButton.className = 'overlay-button';
+                viewButton.title = 'Lihat Gambar';
+                viewButton.innerHTML = `<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.432 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`;
+                viewButton.onclick = () => {
+                    lightboxImage.src = img.src; 
+                    setModalVisibility(lightboxModal, true);
+                };
+
+                const downloadLink = document.createElement('a');
+                downloadLink.className = 'overlay-button single-download';
+                downloadLink.title = 'Unduh Gambar (JPG)';
+                downloadLink.innerHTML = `<svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>`;
+                downloadLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    downloadImageAsJpg(imageUrl, `poster-ai-${Date.now()}-${index + 1}.jpg`);
+                });
+                
+                overlayDiv.appendChild(viewButton);
+                overlayDiv.appendChild(downloadLink);
+                itemDiv.appendChild(img);
+                itemDiv.appendChild(overlayDiv);
+                resultGrid.appendChild(itemDiv);
+            }
+
+            function downloadImageAsJpg(pngUrl, filename) {
+                const tempImg = new Image();
+                tempImg.crossOrigin = 'anonymous';
+                tempImg.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = tempImg.width;
+                    canvas.height = tempImg.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(tempImg, 0, 0);
+                    const jpgUrl = canvas.toDataURL('image/jpeg', 0.9);
+                    const triggerDownload = document.createElement('a');
+                    triggerDownload.href = jpgUrl;
+                    triggerDownload.download = filename;
+                    document.body.appendChild(triggerDownload);
+                    triggerDownload.click();
+                    document.body.removeChild(triggerDownload);
+                };
+                tempImg.src = pngUrl;
+            }
+
+            downloadAllBtn.addEventListener('click', () => {
+                const items = resultGrid.querySelectorAll('.result-grid-item');
+                let delay = 0;
+                items.forEach((item, index) => {
+                    const img = item.querySelector('.result-image');
+                    setTimeout(() => {
+                        downloadImageAsJpg(img.src, `poster-ai-batch-${Date.now()}-${index + 1}.jpg`);
+                    }, delay);
+                    delay += 300; 
+                });
+                showToast(`Mengunduh ${items.length} gambar...`);
+            });
+
+            // --- AI-POWERED TEXT SUGGESTIONS ---
+            generateTextBtn.addEventListener('click', async () => {
+                if (uploadedImages.length === 0) {
+                    showToast('Mohon unggah gambar terlebih dahulu.', true);
+                    return;
+                }
+                const originalButtonText = generateTextBtn.textContent;
+                generateTextBtn.textContent = 'Memuat...';
+                generateTextBtn.disabled = true;
+                try {
+                    const prompt = `Analisis gambar-gambar produk ini. Buatkan satu headline menarik dan 4 poin deskripsi promosi yang SANGAT SINGKAT (maksimal 3 kata per poin). JAWAB HANYA dengan objek JSON valid. Contoh: {"headline": "Miliki Produk Impianmu!", "details": ["Kualitas Terbaik", "Edisi Terbatas", "Harga Spesial", "Banyak Bonus"]}`;
+                    const parts = [{ text: prompt }];
+                    uploadedImages.forEach(img => parts.push({ inlineData: { mimeType: img.mimeType, data: img.data } }));
+                    const result = await generateTextFromLLM({ contents: [{ parts }] });
+                    const generatedText = extractJson(result.candidates[0].content.parts[0].text);
+                    headlineInput.value = generatedText.headline;
+                    const detailInputs = document.querySelectorAll('#details-container input');
+                    detailInputs.forEach(input => input.value = '');
+                    if (generatedText.details && Array.isArray(generatedText.details)) {
+                        generatedText.details.forEach((detail, index) => {
+                            if (detailInputs[index]) detailInputs[index].value = detail;
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error generating ad text:', error);
+                    showToast(`Gagal membuat teks: ${error.message}`, true);
+                } finally {
+                    generateTextBtn.textContent = originalButtonText;
+                    generateTextBtn.disabled = false;
+                }
+            });
+
+            ideaBtn.addEventListener('click', async () => {
+                ideaBtn.classList.add('hidden');
+                ideaLoader.classList.remove('hidden');
+                try {
+                    const currentDetails = Array.from(document.querySelectorAll('#details-container input')).map(i => i.value).join(', ');
+                    const prompt = `Berdasarkan konteks promosi produk: HEADLINE: "${headlineInput.value}", DESKRIPSI: "${currentDetails}". Berikan satu ide headline alternatif yang lebih menarik dalam Bahasa Indonesia. JAWAB HANYA DENGAN TEKS HEADLINE-NYA SAJA.`;
+                    const result = await generateTextFromLLM({ contents: [{ parts: [{ text: prompt }] }] });
+                    headlineInput.value = result.candidates[0].content.parts[0].text.trim();
+                } catch (error) {
+                    console.error("Error getting headline idea:", error);
+                    showToast(`Gagal mendapat ide: ${error.message}`, true);
+                } finally {
+                    ideaLoader.classList.add('hidden');
+                    ideaBtn.classList.remove('hidden');
+                }
+            });
+
+            suggestStyleBtn.addEventListener('click', async () => {
+                const originalIcon = suggestStyleBtn.innerHTML;
+                suggestStyleBtn.innerHTML = `<div class="mini-loader"></div>`;
+                suggestStyleBtn.disabled = true;
+                try {
+                    const options = Array.from(designStyleSelect.options).map(opt => `"${opt.value}"`).join(', ');
+                    const currentDetails = Array.from(document.querySelectorAll('#details-container input')).map(i => i.value).join(', ');
+                    const prompt = `Analisis gambar produk dan teks iklan: HEADLINE: "${headlineInput.value}", DESKRIPSI: "${currentDetails}". Gaya desain mana yang paling cocok? Pilih SATU dari: ${options}. JAWAB HANYA DENGAN NAMA GAYA YANG DIPILIH.`;
+                    const parts = [{ text: prompt }];
+                    if (uploadedImages.length > 0) uploadedImages.forEach(img => parts.push({ inlineData: { mimeType: img.mimeType, data: img.data } }));
+                    const result = await generateTextFromLLM({ contents: [{ parts }] });
+                    const suggestedStyle = result.candidates[0].content.parts[0].text.trim();
+                    const validOption = Array.from(designStyleSelect.options).find(opt => opt.value === suggestedStyle);
+                    if (validOption) designStyleSelect.value = suggestedStyle;
+                    else console.warn("AI suggested a style not in the list:", suggestedStyle);
+                } catch (error) {
+                    console.error("Error suggesting style:", error);
+                    showToast(`Gagal memberi saran gaya: ${error.message}`, true);
+                } finally {
+                    suggestStyleBtn.innerHTML = originalIcon;
+                    suggestStyleBtn.disabled = false;
+                }
+            });
+            
+            updateGenerateButtonState(); // Initial check
+        });
+    </script>
+</body>
+</html>

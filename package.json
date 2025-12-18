@@ -1,0 +1,32 @@
+{
+  "name": "copy-6-of-veo-3.1-generator-admin-sisa-download",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@google/genai": "^1.29.0",
+    "@supabase/supabase-js": "^2.80.0",
+    "axios": "^1.13.2",
+    "multer": "^1.4.5-lts.2",
+    "lucide-react": "^0.554.0",
+    "react-markdown": "9.0.1",
+    "remark-gfm": "4.0.0",
+    "react-syntax-highlighter": "^16.1.0",
+    "tesseract.js": "^6.0.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@vercel/node": "^3.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}

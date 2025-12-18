@@ -1,0 +1,5 @@
+{
+  "name": "CineGen AI",
+  "description": "Hasilkan papan cerita sinematik dengan visual, narasi, dan naskah dialog buatan AI. Unggah referensi karakter untuk membintangi konsep film 1 menit Anda.",
+  "requestFramePermissions": []
+}

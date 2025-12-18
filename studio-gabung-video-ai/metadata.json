@@ -1,0 +1,5 @@
+{
+  "name": "Studio Gabung Video AI",
+  "description": "Aplikasi web untuk menggabungkan beberapa video menjadi satu dengan fitur penambahan narasi suara (TTS) menggunakan Google Gemini AI.",
+  "requestFramePermissions": []
+}
