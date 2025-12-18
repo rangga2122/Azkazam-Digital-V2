@@ -135,19 +135,19 @@ const callApiWithRotation = async (url: string, method: string, data: any, heade
         const token = tokens[currentIndex];
         if ((activeCounts[currentIndex] || 0) >= ACTIVE_LIMIT) continue;
 
-        try {
-            const config: any = {
-                method,
-                url,
-                headers: {
-                    ...headers,
-                    'Authorization': `Bearer ${token}`,
-                    ...(isMultipart && data.getHeaders ? data.getHeaders() : {})
-                },
-                data,
-                timeout: 60000
-            };
+        const config: any = {
+            method,
+            url,
+            headers: {
+                ...headers,
+                'Authorization': `Bearer ${token}`,
+                ...(isMultipart && data.getHeaders ? data.getHeaders() : {})
+            },
+            data,
+            timeout: 60000
+        };
 
+        try {
             const response = await axios(config);
             lastWorkingTokenIndex = currentIndex;
             return response.data;
