@@ -29,7 +29,21 @@ const getDefaultApiBase = () => {
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || getDefaultApiBase();
 
-const apiUrl = (p) => `${API_BASE}${p}`;
+// Map old API paths to new Vercel serverless endpoints
+const apiUrl = (p: string) => {
+  const pathMap: Record<string, string> = {
+    '/api/generate': '/api/soraGenerate',
+    '/api/check-status': '/api/soraCheckStatus',
+    '/api/test-solver': '/api/soraTestSolver'
+  };
+  // Check if path starts with any mapped path
+  for (const [oldPath, newPath] of Object.entries(pathMap)) {
+    if (p === oldPath || p.startsWith(oldPath + '?')) {
+      return `${API_BASE}${p.replace(oldPath, newPath)}`;
+    }
+  }
+  return `${API_BASE}${p}`;
+};
 
 const promptTemplateGroups = [
   {
@@ -189,11 +203,27 @@ function App() {
     }
   };
 
-  const sanitizeError = (msg) => {
+  const sanitizeError = (msg: any): string => {
+    // Handle object errors
+    if (msg && typeof msg === 'object') {
+      if (msg.message) return sanitizeError(msg.message);
+      if (msg.error) return sanitizeError(msg.error);
+      try {
+        return JSON.stringify(msg);
+      } catch {
+        return 'Terjadi kesalahan. Silakan coba lagi.';
+      }
+    }
     const t = String(msg || '');
+    if (!t || t === '[object Object]') {
+      return 'Terjadi kesalahan. Silakan coba lagi.';
+    }
     const lower = t.toLowerCase();
     if (lower.includes('captcha') || lower.includes('turnstile') || lower.includes('token')) {
       return 'Permintaan tidak dapat diproses saat ini. Silakan coba lagi.';
+    }
+    if (lower.includes('network') || lower.includes('fetch') || lower.includes('timeout')) {
+      return 'Gagal terhubung ke server. Periksa koneksi internet Anda.';
     }
     return t;
   };
@@ -301,8 +331,9 @@ function App() {
           await animateProgress(startPercent, endPercent, POLLING_INTERVAL);
           currentProgress = endPercent;
         }
-      } catch (err) {
-        setErrorMsg(sanitizeError(err.message) || 'Gagal saat polling status.');
+      } catch (err: any) {
+        const errMsg = err?.response?.data?.error || err?.response?.data?.message || err?.message || err;
+        setErrorMsg(sanitizeError(errMsg) || 'Gagal saat polling status.');
         setViewState('error');
         return;
       }
@@ -363,8 +394,8 @@ function App() {
         lastError = response.data.error || 'Gagal mendapatkan UUID.';
         break; // Jika sukses false tapi bukan network error, stop retry
         
-      } catch (err) {
-        lastError = err.response?.data?.error || err.message;
+      } catch (err: any) {
+        lastError = err?.response?.data?.error || err?.response?.data?.message || err?.message || err;
         const text = String(lastError || '').toLowerCase();
         if (text.includes('captcha') || text.includes('turnstile')) {
           try {
